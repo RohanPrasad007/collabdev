@@ -46,10 +46,10 @@ export default function SignIn() {
                     <div className="mb-8">
                         <img src="/Logo.svg" alt="Logo" />
                     </div>
-                    <p className="font-bold text-[#E2E2FE] text-[28px] mb-8">Sign Up</p>
+                    <p className="font-bold text-[#E2E2FE] text-[28px] mb-8 font-[ZenDots]">CollabDev</p>
                     <button className="w-[301px] h-[58px] bg-[#020222] rounded-[30px] border-[#E2E2FE] border-2 flex gap-3 p-2 items-center justify-center drop-shadow-xl" onClick={signInWithGoogle}>
                         <img src="/google.svg" alt="google" />
-                        <p className="font-bold text-[#E2E2FE] text-[18px] " >Sign Up</p>
+                        <p className="font-bold text-[#E2E2FE] text-[18px] " >Continue with Google</p>
                     </button>
                 </div>
             </div>
