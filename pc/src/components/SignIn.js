@@ -19,25 +19,24 @@ const SignIn = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md p-8 space-y-6">
-        <h2 className="text-2xl font-bold text-center">Sign In</h2>
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
+    <div className="h-screen bg-[#020222] flex justify-center items-center relative">
+      <div className="bg-[#E2E2FE] w-[756px] h-[422px] opacity-[25%] rounded-[8px]" />
+      <div className="bg-[#848DF9] w-[700px] h-[371px] rounded-[8px] absolute flex items-center justify-center shadow-md shadow-[#63636c]">
+        <div>
+          <img src="/bgLeft.svg" className="absolute left-0 top-0" />
+          <img src="/bgRight.svg" className="absolute right-0 top-0" />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="mb-8">
+            <img src="/Logo.svg" alt="Logo" />
           </div>
-        )}
-        <button
-          onClick={handleGoogleSignIn}
-          className="w-full p-2 bg-white border border-gray-300 rounded flex items-center justify-center space-x-2 hover:bg-gray-50"
-        >
-          <img 
-            src="https://www.google.com/favicon.ico" 
-            alt="Google" 
-            className="w-5 h-5"
-          />
-          <span>Sign in with Google</span>
-        </button>
+          <p className="font-bold text-[#E2E2FE] text-[28px] mb-8">Sign Up</p>
+          <button className="w-[301px] h-[58px] bg-[#020222] rounded-[30px] border-[#E2E2FE] border-2 flex gap-3 p-2 items-center justify-center drop-shadow-xl" onClick={handleGoogleSignIn}>
+            <img src="/google.svg" alt="google" />
+            <p className="font-bold text-[#E2E2FE] text-[18px] " >Sign Up</p>
+          </button>
+        </div>
       </div>
     </div>
   );
