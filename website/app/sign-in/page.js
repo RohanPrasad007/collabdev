@@ -28,7 +28,7 @@ export default function SignIn() {
         const provider = new GoogleAuthProvider();
         try {
             await signInWithPopup(auth, provider)
-            router.push("/")
+            router.push("/profile-info")
         } catch (error) {
             console.error("Error signing in with  Google", error.message)
         }
