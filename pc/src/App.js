@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import SignIn from './components/SignIn';
 import Home from './components/Home';
 import { useAuth } from './context/AuthContext';
+import ProfileInfo from './components/ProfileInfo';
 
 const App = () => {
   return (
@@ -10,6 +11,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/profile-info" element={<ProfileInfo />} />
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to="/signin" replace />} />
         </Routes>

@@ -11,7 +11,7 @@ const SignIn = () => {
     try {
       setError('');
       await signInWithGoogle();
-      navigate('/home');
+      navigate('/profile-info');
     } catch (error) {
       setError('Failed to sign in with Google');
       console.error(error);
