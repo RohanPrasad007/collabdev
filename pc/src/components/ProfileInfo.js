@@ -80,14 +80,14 @@ const ProfileInfo = () => {
             const userRef = ref(database, `users/${user.uid}`);
             await set(userRef, userData);
             alert("Profile saved successfully!");
-            navigate("/")
+            navigate("/home")
         } catch (error) {
             console.error("Error saving profile data:", error);
             alert("An error occurred while saving the profile. Please try again.");
         }
     };
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center h-screen bg-black">
     <form onSubmit={handleSubmit} className="max-w-xl mx-auto bg-gray-800 p-10 rounded-md">
         <div className="flex justify-between gap-10 items-center">
             <div className="mb-5">
