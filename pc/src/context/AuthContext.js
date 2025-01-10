@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, database } from '../firebase';
 import { signInWithPopup, signOut } from 'firebase/auth';
+import { ref, get } from 'firebase/database';
 
 const AuthContext = createContext();
 
@@ -21,10 +22,21 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
+  const checkIfUserExists = async (uid) => {
+    try {
+      const userRef = ref(database, `users/${uid}`);
+      const snapshot = await get(userRef);
+      return snapshot.exists();
+    } catch (error) {
+      console.error("Error checking if user exists:", error);
+      throw error;
+    }
+  };
+
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      return result.user;
+      return result;
     } catch (error) {
       console.error("Error signing in with Google", error);
       throw error;
@@ -43,7 +55,8 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     signInWithGoogle,
-    logout
+    logout,
+    checkIfUserExists
   };
 
   return (
