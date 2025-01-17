@@ -15,6 +15,7 @@ class AuthScreen extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () async {
             final user = await _authService.signInWithGoogle();
+            print("this is working");
             if (user != null) {
               print("Signed in: ${user.displayName}");
               Navigator.push(
