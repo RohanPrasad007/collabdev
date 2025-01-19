@@ -4,6 +4,7 @@ import { auth, database } from "../../config";
 import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { ref, set, get } from "firebase/database";
 import { useRouter } from "next/navigation";
+import { ToastContainer, toast } from 'react-toastify';
 
 const ProfileInfo = () => {
     const [preview, setPreview] = useState(null);
@@ -58,7 +59,7 @@ const ProfileInfo = () => {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 5000000) {
-                alert("File size should be less than 5MB");
+                toast.error("File size should be less than 5MB");
                 return;
             }
 
@@ -74,23 +75,23 @@ const ProfileInfo = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!preview || !email || !githubId || !userId) {
-            alert("Please fill all the fields.");
+            toast.error("Please fill all the fields.");
             return;
         }
-
+    
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            alert("Please enter a valid email address.");
+            toast.error("Please enter a valid email address.");
             return;
         }
-
+    
         try {
             setIsLoading(true);
             const user = auth.currentUser;
             if (!user) throw new Error("User is not authenticated.");
-
+    
             // Store full image data in Realtime Database
             const userData = {
                 userName: userId,
@@ -100,11 +101,11 @@ const ProfileInfo = () => {
                 hasCustomImage: true,
                 lastUpdated: new Date().toISOString()
             };
-
+    
             // Update Realtime Database first
             const userRef = ref(database, `users/${user.uid}`);
             await set(userRef, userData);
-
+    
             // Use a generic photoURL for Authentication to avoid size limitations
             try {
                 await updateProfile(user, {
@@ -114,16 +115,19 @@ const ProfileInfo = () => {
                 console.warn("Failed to update Authentication profile picture, but database update succeeded:", authError);
                 // Continue execution since the main functionality (database update) succeeded
             }
-
-            setIsVisible(true);
-
-            setTimeout(() => {
-                setIsVisible(false);
-                router.push("/");
-            }, 1500);
+    
+            // Show toast and wait for it to complete
+            await new Promise((resolve) => {
+                toast.success("Profile saved successfully!", {
+                    onClose: () => resolve()
+                });
+            });
+    
+            // Redirect after toast is closed
+            router.push("/");
         } catch (error) {
             console.error("Error saving profile data:", error);
-            alert("An error occurred while saving the profile. Please try again.");
+            toast("An error occurred while saving the profile. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -218,6 +222,7 @@ const ProfileInfo = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer />
         </>
     );
 };

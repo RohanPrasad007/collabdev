@@ -3,7 +3,7 @@ import { auth, database } from "../firebase";
 import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { ref, set, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
-
+import { ToastContainer, toast } from 'react-toastify';
 
 const ProfileInfo = () => {
     const [preview, setPreview] = useState(null);
@@ -58,7 +58,7 @@ const ProfileInfo = () => {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 5000000) {
-                alert("File size should be less than 5MB");
+                toast.error("File size should be less than 5MB");
                 return;
             }
 
@@ -76,13 +76,13 @@ const ProfileInfo = () => {
         e.preventDefault();
 
         if (!preview || !email || !githubId || !userId) {
-            alert("Please fill all the fields.");
+            toast.error("Please fill all the fields.");
             return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            alert("Please enter a valid email address.");
+            toast.error("Please enter a valid email address.");
             return;
         }
 
@@ -115,15 +115,17 @@ const ProfileInfo = () => {
                 // Continue execution since the main functionality (database update) succeeded
             }
 
-            setIsVisible(true);
-
-            setTimeout(() => {
-                setIsVisible(false);
-                router("/home");
-            }, 1500);
+             await new Promise((resolve) => {
+                toast.success("Profile saved successfully!", {
+                    onClose: () => resolve()
+                });
+            });
+    
+            // Redirect after toast is closed
+            router("/home");
         } catch (error) {
             console.error("Error saving profile data:", error);
-            alert("An error occurred while saving the profile. Please try again.");
+            toast.error("An error occurred while saving the profile. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -310,6 +312,7 @@ const ProfileInfo = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer />
         </>
     )
 }
