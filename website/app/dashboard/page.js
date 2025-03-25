@@ -1,5 +1,8 @@
 import React from 'react'
 import SidebarContainer from '../components/SidebarContainer'
+import EmptyVoiceInvite from '../components/EmptyVoiceInvite'
+import InteractionTools from '../components/interactionTools'
+import PresentUser from '../components/PresentUser'
 
 const dashboard = () => {
     return (
@@ -16,37 +19,9 @@ const dashboard = () => {
                             <img src='/messager.svg' className='w-[30.63px] h-[30.63px]' />
                         </div>
                     </div>
-                    <div className='flex flex-col lg:flex-row justify-center items-center min-h-[80%] gap-8 md:gap-[4.5rem] p-4'>
-                        <div className='bg-[#020222] w-full md:w-[400px] h-[298px] rounded-[40px] flex justify-center items-center relative'>
-                            <div className='bg-[#D9D9D9] w-[102.08px] h-[98px] rounded-full' />
-                            <div className='absolute bottom-0'>
-                                <p className='text-[#E2E2FE] text-[20px] font-medium mb-2'>You</p>
-                            </div>
-                        </div>
-
-                        <div className='bg-[#020222] w-full md:w-[400px] h-[298px] rounded-[40px] flex justify-center items-center relative border-[#E433F5] border-[3px]'>
-                            <div className='bg-[#D9D9D9] w-[102.08px] h-[98px] rounded-full' />
-                            <div className='absolute bottom-0'>
-                                <p className='text-[#E2E2FE] text-[20px] font-medium mb-2'>User</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className='absolute bottom-0 w-[97%] ' >
-                        <div className='flex justify-center h-[100px] items-center gap-[1rem]'>
-                            <div className='bg-[#020222] w-[60px] h-[60px] rounded-full flex justify-center items-center  cursor-pointer'>
-                                <img src='/video-call.svg' className='w-[38.4px] h-[38.4px]' />
-                            </div>
-                            <div className='bg-[#020222] w-[60px] h-[60px] rounded-full flex justify-center items-center  cursor-pointer'>
-                                <img src='/mic.svg' className='w-[30px] h-[30px]' />
-                            </div>
-                            <div className='bg-[#020222] w-[60px] h-[60px] rounded-full flex justify-center items-center  cursor-pointer'>
-                                <img src='/screen-share.svg' className='w-[38.4px] h-[38.4px]' />
-                            </div>
-                            <div className='bg-[#E33629] w-[60px] h-[60px] rounded-full flex justify-center items-center  cursor-pointer'>
-                                <img src='/call-hang-up.svg' className='w-[30px] h-[30px]' />
-                            </div>
-                        </div>
-                    </div>
+                    <PresentUser />
+                    {/* <EmptyVoiceInvite /> */}
+                    <InteractionTools />
                 </div>
             </div>
 
