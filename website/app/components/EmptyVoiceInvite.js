@@ -3,12 +3,7 @@ import React from 'react'
 const EmptyVoiceInvite = () => {
     return (
         <div className='flex flex-col lg:flex-col justify-center items-center min-h-[80%] gap-8 md:gap-[16px] p-4'>
-            <div className='bg-[#020222] w-full md:w-[500px] h-[325px] rounded-[40px] flex justify-center items-center relative'>
-                <div className='bg-[#D9D9D9] w-[102.08px] h-[98px] rounded-full' />
-                <div className='absolute bottom-0'>
-                    <p className='text-[#E2E2FE] text-[20px] font-medium mb-2'>You</p>
-                </div>
-            </div>
+
             <div className='bg-[#020222] w-full md:w-[500px] h-[325px]  rounded-[40px] flex flex-col justify-end items-center relative '>
                 <div className='absolute -top-[18px]'>
                     <img src='/voice-empty.svg' />

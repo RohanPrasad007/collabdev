@@ -2,14 +2,15 @@
 import React, { useState } from 'react'
 import SidebarContainer from '../components/SidebarContainer'
 import EmptyVoiceInvite from '../components/EmptyVoiceInvite'
-import InteractionTools from '../components/interactionTools'
+import InteractionTools from "../components/InteractionTools"
 import PresentUser from '../components/PresentUser'
 import CreateThread from '../components/CreateThread'
 import CreateEcho from '../components/CreateEcho'
 import PersonalizeYourMatrix from '../components/PersonalizeYourMatrix'
+import { useDialogs } from '@/context/DialogsContext'
 
 const dashboard = () => {
-
+    const { openMetrixDialog, openThreadDialog, openEchoDialog } = useDialogs();
     return (
         <div className=' w-full h-[98vh] gap-2 relative'>
             <div className='flex my-2  h-[98vh] gap-2 '>
@@ -25,14 +26,19 @@ const dashboard = () => {
                         </div>
                     </div>
                     <PresentUser />
-                    {/* <EmptyVoiceInvite /> */}
+
                     <InteractionTools />
                 </div>
             </div>
-            {/* <CreateThread /> */}
-            {/* <CreateEcho /> */}
-            {/* <PersonalizeYourMatrix /> */}
-
+            {openThreadDialog &&
+                <CreateThread />
+            }
+            {openEchoDialog &&
+                <CreateEcho />
+            }
+            {openMetrixDialog &&
+                <PersonalizeYourMatrix />
+            }
 
 
         </div>

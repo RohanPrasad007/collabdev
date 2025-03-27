@@ -21,7 +21,7 @@ export default function SignIn() {
                     if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
                         router.push("/profile-info");
                     } else {
-                        router.push("/");
+                        router.push("/dashboard");
                     }
                 }
             })
@@ -37,7 +37,7 @@ export default function SignIn() {
             if (user) {
                 setUser(user);
                 // If user is already signed in, redirect to home
-                router.push("/");
+                router.push("/dashboard");
             } else {
                 setUser(null);
             }
@@ -55,7 +55,7 @@ export default function SignIn() {
                 if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
                     router.push("/profile-info");
                 } else {
-                    router.push("/");
+                    router.push("/dashboard");
                 }
             } catch (popupError) {
                 // If popup fails, fall back to redirect
@@ -89,8 +89,8 @@ export default function SignIn() {
                         <img src="/Logo.svg" alt="Logo" />
                     </div>
                     <p className="font-bold text-[#E2E2FE] text-[28px] mb-8 font-[ZenDots]">CollabDev</p>
-                    <button 
-                        className="w-[301px] h-[58px] bg-[#020222] rounded-[30px] border-[#E2E2FE] border-2 flex gap-3 p-2 items-center justify-center drop-shadow-xl" 
+                    <button
+                        className="w-[301px] h-[58px] bg-[#020222] rounded-[30px] border-[#E2E2FE] border-2 flex gap-3 p-2 items-center justify-center drop-shadow-xl"
                         onClick={signInWithGoogleHandler}
                     >
                         <img src="/google.svg" alt="google" />

@@ -1,9 +1,12 @@
 import React from 'react'
 import Metrixs from './Metrixs'
+import ActionBar from './ActionBar'
+import { useDialogs } from '@/context/DialogsContext'
 
 const SidebarContainer = () => {
+    const { toggleThreadDialog, toggleEchoDialog } = useDialogs()
     return (
-        <div className='w-[20%]  bg-[#C0C3E3] rounded-[8px] flex '>
+        <div className='w-[20%]  bg-[#C0C3E3] rounded-[8px] flex relative'>
             <Metrixs />
             <div className='w-full'>
                 <div className='h-[60px] border-[#020222] border-b-2 flex justify-start gap-2 items-end px-5 py-1 '>
@@ -27,7 +30,7 @@ const SidebarContainer = () => {
                                 Threads
                             </div>
                             <div>
-                                <img src='/plus.svg' />
+                                <img src='/plus.svg' onClick={toggleThreadDialog} className='cursor-pointer' />
                             </div>
                         </div>
                     </div>
@@ -78,7 +81,7 @@ const SidebarContainer = () => {
                                 Echoes
                             </div>
                             <div>
-                                <img src='/plus.svg' />
+                                <img src='/plus.svg' onClick={toggleEchoDialog} className='cursor-pointer' />
                             </div>
                         </div>
                     </div>
@@ -121,6 +124,7 @@ const SidebarContainer = () => {
 
 
             </div>
+            <ActionBar />
         </div>
     )
 }

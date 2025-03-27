@@ -1,8 +1,10 @@
+import { useDialogs } from '@/context/DialogsContext';
 import React, { useState } from 'react'
 
 const CreateEcho = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState('');
+    const { toggleEchoDialog } = useDialogs()
 
     const options = [
         'Option 1',
@@ -28,7 +30,7 @@ const CreateEcho = () => {
                         Create Echo
                     </div>
                     <div>
-                        <img src='/close-toggle.svg' />
+                        <img src='/close-toggle.svg' onClick={toggleEchoDialog} className='cursor-pointer' />
                     </div>
                 </div>
                 <div className='mt-[36px] flex flex-col gap-[22px]'>

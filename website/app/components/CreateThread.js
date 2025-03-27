@@ -1,8 +1,10 @@
+import { useDialogs } from '@/context/DialogsContext';
 import React, { useState } from 'react'
 
 const CreateThread = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState('');
+    const { toggleThreadDialog } = useDialogs()
 
     const options = [
         'Option 1',
@@ -28,7 +30,7 @@ const CreateThread = () => {
                         Create Thread
                     </div>
                     <div>
-                        <img src='/close-toggle.svg' />
+                        <img src='/close-toggle.svg' onClick={toggleThreadDialog} className='cursor-pointer' />
                     </div>
                 </div>
                 <div className='mt-[36px] flex flex-col gap-[22px]'>

@@ -1,6 +1,7 @@
 import React from 'react'
+import EmptyVoiceInvite from './EmptyVoiceInvite'
 
-const PresentUsers = ({ userCount = 4 }) => {
+const PresentUsers = ({ userCount = 1 }) => {
     return (
         <div className='flex flex-col justify-center items-center min-h-[80%] p-4'>
             <div className={`
@@ -31,6 +32,9 @@ const PresentUsers = ({ userCount = 4 }) => {
                     </div>
                 ))}
             </div>
+            {userCount <= 1 &&
+                <EmptyVoiceInvite />
+            }
         </div>
     )
 }

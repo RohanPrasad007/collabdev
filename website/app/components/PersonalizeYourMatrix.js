@@ -1,13 +1,15 @@
+import { useDialogs } from '@/context/DialogsContext';
 import React from 'react'
 
 const PersonalizeYourMatrix = () => {
+    const { toggleMetrixDialog } = useDialogs();
     return (
         <div className='absolute top-0 w-full h-[98vh] bg-black/70 flex justify-center items-center'>
             <div className='w-[615px] h-[430px] bg-[#020222] border-[1px] border-[#848DF9] drop-shadow-2xl rounded-[12px] 
-py-[12px] px-[23px] relative text-center '>
+                py-[12px] px-[23px] relative text-center '>
 
                 <div className='flex justify-end '>
-                    <img src='/close-toggle.svg' />
+                    <img src='/close-toggle.svg' className='cursor-pointer' onClick={toggleMetrixDialog} />
                 </div>
                 <div className='text-[#E2E2FE] font-semibold text-[20px] mb-[8px]'>
                     Personalize Your Matrix
