@@ -24,8 +24,8 @@ export const MatrixProvider = ({ children }) => {
             if (matrix && matrix.track) {
               router.push(`/track?id=${matrix.track}`);
             } else {
-              // If no track, go to dashboard
-              router.push('/dashboard');
+              // If no track, go to /
+              router.push('/');
             }
           }
         } catch (error) {

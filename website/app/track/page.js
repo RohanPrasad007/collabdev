@@ -62,13 +62,13 @@ const Track = () => {
                         // Update URL to include new track ID
                         router.push(`/track?id=${newTrack.track_id}`)
                     } else {
-                        // No matrix found, redirect to dashboard
-                        router.push('/dashboard')
+                        // No matrix found, redirect to /
+                        router.push('/')
                         return
                     }
                 } else {
-                    // No matrix selected, redirect to dashboard
-                    router.push('/dashboard')
+                    // No matrix selected, redirect to /
+                    router.push('/')
                     return
                 }
             } catch (err) {

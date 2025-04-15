@@ -21,7 +21,7 @@ export default function SignIn() {
                     if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
                         router.push("/profile-info");
                     } else {
-                        router.push("/dashboard");
+                        router.push("/");
                     }
                 }
             })
@@ -37,7 +37,7 @@ export default function SignIn() {
             if (user) {
                 setUser(user);
                 // If user is already signed in, redirect to home
-                router.push("/dashboard");
+                router.push("/");
             } else {
                 setUser(null);
             }
@@ -55,7 +55,7 @@ export default function SignIn() {
                 if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
                     router.push("/profile-info");
                 } else {
-                    router.push("/dashboard");
+                    router.push("/");
                 }
             } catch (popupError) {
                 // If popup fails, fall back to redirect

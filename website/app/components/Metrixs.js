@@ -57,8 +57,8 @@ const Metrixs = () => {
                 // If on track page and matrix has track, navigate to that track
                 router.push(`/track?id=${selectedMatrix.track}`);
             } else {
-                // If on track page but matrix has no track, go to dashboard
-                router.push('/dashboard');
+                // If on track page but matrix has no track, go to /
+                router.push('/');
             }
         }
     };
