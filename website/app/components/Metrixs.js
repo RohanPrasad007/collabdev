@@ -8,7 +8,7 @@ import { database } from '../../config';
 const Metrixs = () => {
     const { toggleMetrixDialog } = useDialogs();
     const { user } = useAuth();
-    const { setCurrentMatrixId } = useMatrix();
+    const { currentMatrixId , setCurrentMatrixId } = useMatrix();
     const [matrices, setMatrices] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -18,14 +18,10 @@ const Metrixs = () => {
             return;
         }
 
-        // Reference to the matrices in the Realtime Database
         const matricesRef = ref(database, 'matrices');
-        
-        // Use onValue instead of get to listen for real-time updates
         const unsubscribe = onValue(matricesRef, (snapshot) => {
             if (snapshot.exists()) {
                 const matricesData = snapshot.val();
-                // Filter matrices to only include those where the user is included
                 const userMatrices = Object.entries(matricesData)
                     .filter(([_, matrix]) => matrix.users && matrix.users.includes(user.uid))
                     .map(([id, data]) => ({
@@ -43,13 +39,16 @@ const Metrixs = () => {
             setLoading(false);
         });
 
-        // Clean up the listener when the component unmounts
         return () => unsubscribe();
     }, [user]);
 
     const handleMatrixClick = (matrixId) => {
         setCurrentMatrixId(matrixId);
     };
+
+    // 🔥 Calculate position of active button
+    const activeIndex = matrices.findIndex(matrix => matrix.id === currentMatrixId);
+    const topOffset = 7.5 * 16 + activeIndex * 80; // 7.5rem = 120px, then +80px per matrix
 
     return (
         <div className='w-[40%] border-[#020222] border-r-2 relative'>
@@ -59,13 +58,14 @@ const Metrixs = () => {
                 </div>
                 <div className='border-[#020222] border-b-2 w-[50px] h-[2px] mt-3 mx-auto'></div>
             </div>
+
             <div className='my-8 flex flex-col gap-5'>
                 {loading ? (
                     ""
                 ) : (
                     <>
                         {matrices.length > 0 ? (
-                            matrices.map((matrix, index) => (
+                            matrices.map((matrix) => (
                                 <div
                                     key={matrix.id}
                                     className='flex flex-col items-center cursor-pointer'
@@ -87,7 +87,6 @@ const Metrixs = () => {
                                             </div>
                                         )}
                                     </div>
-
                                 </div>
                             ))
                         ) : (
@@ -103,11 +102,22 @@ const Metrixs = () => {
                     </>
                 )}
             </div>
-            <div className='top-[7.5rem] absolute'>
+
+            {activeIndex !== -1 ? (
+                <div
+                    className='absolute transition-all duration-300'
+                    style={{ top: `${topOffset}px ` }}
+                >
+                    <img src="/active.svg" alt="Active" />
+                </div>
+            ) : (
+                <div className='top-[7.5rem] absolute'>
                 <img src="/active.svg" alt="Active" />
             </div>
+            )}
         </div>
     );
 };
+
 
 export default Metrixs;
