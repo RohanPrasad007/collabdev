@@ -6,6 +6,7 @@ import { database } from '@/config';
 import { Thread } from '../model/Thread';
 import { Message } from '../model/Message';
 import { Echo } from '../model/Echo';
+import { Track } from '../model/Track';
 
 // Create a new matrix
 export const createNewMatrix = async (matrixData) => {
@@ -226,4 +227,47 @@ export const removeFileFromThread = async (threadId, fileId) => {
 // Matrix Relationship Services
 export const addUserToMatrixWithRole = async (matrixId, userId, role = 'member') => {
   return await db.addUserToMatrix(matrixId, userId, role);
+};
+
+
+// Create a new track
+export const createNewTrack = async (trackData) => {
+  try {
+    const track = new Track(trackData);
+    const trackRef = ref(database, `tracks/${track.track_id}`);
+    await set(trackRef, track);
+    return track;
+  } catch (error) {
+    console.error('Error creating track:', error);
+    throw error;
+  }
+};
+
+// Get a track by ID
+export const getTrackById = async (trackId) => {
+  try {
+    const trackRef = ref(database, `tracks/${trackId}`);
+    const snapshot = await get(trackRef);
+
+    if (snapshot.exists()) {
+      return snapshot.val();
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error getting track:', error);
+    throw error;
+  }
+};
+
+// Update track in matrix
+export const updateMatrixTrack = async (matrixId, trackId) => {
+  try {
+    const matrixRef = ref(database, `matrices/${matrixId}`);
+    await update(matrixRef, { track: trackId });
+    return trackId;
+  } catch (error) {
+    console.error('Error updating matrix track:', error);
+    throw error;
+  }
 };

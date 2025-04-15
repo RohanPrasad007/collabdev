@@ -4,13 +4,15 @@ import { useMatrix } from '@/context/matrixContext';
 import React, { useEffect, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../../config';
+import { useRouter } from 'next/navigation';
 
 const Metrixs = () => {
     const { toggleMetrixDialog } = useDialogs();
     const { user } = useAuth();
-    const { currentMatrixId , setCurrentMatrixId } = useMatrix();
+    const { currentMatrixId, setCurrentMatrixId } = useMatrix();
     const [matrices, setMatrices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         if (!user) {
@@ -43,13 +45,27 @@ const Metrixs = () => {
     }, [user]);
 
     const handleMatrixClick = (matrixId) => {
+        // First update the current matrix
         setCurrentMatrixId(matrixId);
+
+        // Find the matrix data
+        const selectedMatrix = matrices.find(matrix => matrix.id === matrixId);
+
+        // Handle navigation based on current page and matrix data
+        if (window.location.pathname.includes('/track')) {
+            if (selectedMatrix && selectedMatrix.track) {
+                // If on track page and matrix has track, navigate to that track
+                router.push(`/track?id=${selectedMatrix.track}`);
+            } else {
+                // If on track page but matrix has no track, go to dashboard
+                router.push('/dashboard');
+            }
+        }
     };
 
-    // 🔥 Calculate position of active button
+    // Calculate position of active button
     const activeIndex = matrices.findIndex(matrix => matrix.id === currentMatrixId);
-    const topOffset = 7.5 * 16 + activeIndex * 80; // 7.5rem = 120px, then +80px per matrix
-
+    const topOffset = 7.5 * 16 + activeIndex * 80;
     return (
         <div className='w-[40%] border-[#020222] border-r-2 relative'>
             <div className='h-[70px] mx-4 my-4 flex flex-col justify-center'>
@@ -112,8 +128,8 @@ const Metrixs = () => {
                 </div>
             ) : (
                 <div className='top-[7.5rem] absolute'>
-                <img src="/active.svg" alt="Active" />
-            </div>
+                    <img src="/active.svg" alt="Active" />
+                </div>
             )}
         </div>
     );
