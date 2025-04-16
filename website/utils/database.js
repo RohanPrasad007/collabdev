@@ -1,6 +1,6 @@
 // utils/database.js
 import { ref, set, get, push, update, remove } from 'firebase/database';
-import { database } from '../../config';
+import { database } from '../config';
 
 // Matrix CRUD operations
 export const createMatrix = async (matrixData) => {
@@ -120,59 +120,59 @@ export const removeFileFromThread = async (threadId, fileId) => {
 export const addEchoToMatrix = async (matrixId, echoId) => {
   const matrixRef = ref(database, `matrices/${matrixId}`);
   const snapshot = await get(matrixRef);
-  
+
   if (snapshot.exists()) {
     const matrixData = snapshot.val();
     const echoes = matrixData.echoes || [];
-    
+
     if (!echoes.includes(echoId)) {
       echoes.push(echoId);
       await update(matrixRef, { echoes });
     }
-    
+
     return echoId;
   }
-  
+
   throw new Error(`Matrix with ID ${matrixId} not found`);
 };
 
 export const addThreadToMatrix = async (matrixId, threadId) => {
   const matrixRef = ref(database, `matrices/${matrixId}`);
   const snapshot = await get(matrixRef);
-  
+
   if (snapshot.exists()) {
     const matrixData = snapshot.val();
     const threads = matrixData.threads || [];
-    
+
     if (!threads.includes(threadId)) {
       threads.push(threadId);
       await update(matrixRef, { threads });
     }
-    
+
     return threadId;
   }
-  
+
   throw new Error(`Matrix with ID ${matrixId} not found`);
 };
 
 export const addUserToMatrix = async (matrixId, userId, role = 'member') => {
   const matrixRef = ref(database, `matrices/${matrixId}`);
   const snapshot = await get(matrixRef);
-  
+
   if (snapshot.exists()) {
     const matrixData = snapshot.val();
     const users = matrixData.users || [];
     const permissions = matrixData.permissions || {};
-    
+
     if (!users.includes(userId)) {
       users.push(userId);
       permissions[userId] = { user_id: userId, role };
       await update(matrixRef, { users, permissions });
     }
-    
+
     return userId;
   }
-  
+
   throw new Error(`Matrix with ID ${matrixId} not found`);
 };
 

@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { database } from '../../config'; // Import your firebase setup
+import { database } from '../config'; // Import your firebase setup
 import { ref, onValue, update, set, remove } from 'firebase/database';
 
 const TrackBoard = (props) => {

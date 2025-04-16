@@ -1,20 +1,17 @@
 import { useDialogs } from '@/context/DialogsContext';
 import React, { useState } from 'react';
-import { createNewThread } from '../services/databaseService';
+import { createNewEcho } from '../services/databaseService';
 import { useAuth } from '@/context/AuthContext';
-// Import your way of getting the current matrix
-import { useMatrix } from '../../context/matrixContext'; // Option B
+import { useMatrix } from '../context/matrixContext';
 
-
-const CreateThread = () => {
+const CreateEcho = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState('All');
-    const [threadName, setThreadName] = useState('');
+    const [echoName, setEchoName] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const { toggleThreadDialog } = useDialogs();
+    const { toggleEchoDialog } = useDialogs();
     const { user } = useAuth();
-
     const { currentMatrixId } = useMatrix();
 
     const options = [
@@ -33,16 +30,15 @@ const CreateThread = () => {
         setIsOpen(false);
     };
 
-    // CreateThread.js
-    const handleCreateThread = async () => {
+    const handleCreateEcho = async () => {
         // Validate input
-        if (!threadName.trim()) {
-            setError('Please enter a thread name');
+        if (!echoName.trim()) {
+            setError('Please enter an echo name');
             return;
         }
 
         if (!user) {
-            setError('You must be logged in to create a thread');
+            setError('You must be logged in to create an echo');
             return;
         }
 
@@ -55,24 +51,26 @@ const CreateThread = () => {
         setError('');
 
         try {
-            // Create the thread object with all required fields
-            const threadData = {
-                name: threadName.trim(),
+            // Create the echo object with all required fields
+            const echoData = {
+                name: echoName.trim(),
                 access_level: selectedOption,
-                created_by: user.uid, // Add the creator's user ID
-                messages: [], // Initialize empty messages array
-                files: [] // Initialize empty files array
+                created_by: user.uid,
+                active_participants: [], // Initialize empty participants array
+                status: 'active', // or 'pending' based on your requirements
+                offer_details: '', // Initialize empty
+                answer_details: '' // Initialize empty
             };
 
-            // Create thread and associate with matrix
-            const createdThread = await createNewThread(threadData, currentMatrixId);
+            // Create echo and associate with matrix
+            const createdEcho = await createNewEcho(echoData, currentMatrixId);
 
-            console.log('Thread created successfully:', createdThread);
-            toggleThreadDialog();
+            console.log('Echo created successfully:', createdEcho);
+            toggleEchoDialog();
 
         } catch (error) {
-            console.error('Error creating thread:', error);
-            setError('Failed to create thread. Please try again.');
+            console.error('Error creating echo:', error);
+            setError('Failed to create echo. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -80,33 +78,39 @@ const CreateThread = () => {
 
     return (
         <div className='absolute top-0 w-full h-[98vh] bg-black/70 flex justify-center items-center'>
-            <div className='w-[615px] h-[400px] bg-[#020222] border-[1px] border-[#848DF9] drop-shadow-2xl rounded-[12px] 
-    p-[24px]  relative'>
+            <div className='w-[615px] h-[400px] bg-[#020222] border-[1px] border-[#848DF9] drop-shadow-2xl rounded-[12px] p-[24px] relative'>
                 <div className='flex justify-between items-center'>
-                    <div className='font-medium  text-[24px] text-[#E2E2FE]'>
-                        Create Thread
+                    <div className='font-medium text-[24px] text-[#E2E2FE]'>
+                        Create Echo
                     </div>
                     <div>
-                        <img src='/close-toggle.svg' onClick={toggleThreadDialog} className='cursor-pointer' alt="Close" />
+                        <img
+                            src='/close-toggle.svg'
+                            onClick={toggleEchoDialog}
+                            className='cursor-pointer'
+                            alt="Close"
+                        />
                     </div>
                 </div>
+
+                {error && (
+                    <div className="mt-4 text-red-500 text-sm">
+                        {error}
+                    </div>
+                )}
+
                 <div className='mt-[36px] flex flex-col gap-[22px]'>
                     <div>
-                        <div className='font-bold text-[14px] text-[#E2E2FE] mb-2'>THREAD NAME</div>
+                        <div className='font-bold text-[14px] text-[#E2E2FE] mb-2'>ECHO NAME</div>
                         <div className='w-[544px] h-[50px] bg-[#0A0A3A] border-[1px] border-[#848DF9] px-[9px] outline-none rounded-[8px] flex items-center gap-2'>
-                            <img src='/Thread-icon.svg' alt="Thread icon" />
+                            <img src='/Thread-icon.svg' alt="Thread" />
                             <input
-                                className='w-full h-full bg-[#0A0A3A] outline-none rounded-[8px] placeholder:text-[#E2E2FE]/70 text-[14px] text-[#E2E2FE]'
-                                placeholder='new-thread-name'
-                                value={threadName}
-                                onChange={(e) => setThreadName(e.target.value)}
+                                className='w-full h-full bg-[#0A0A3A] outline-none rounded-[8px] placeholder:text-[#E2E2FE]/70 text-[14px]'
+                                placeholder='new-echo-name'
+                                value={echoName}
+                                onChange={(e) => setEchoName(e.target.value)}
                             />
                         </div>
-                        {error && (
-                            <div className='text-start text-[12px] font-medium text-red-500 mt-1'>
-                                {error}
-                            </div>
-                        )}
                     </div>
                     <div>
                         <div className='font-medium text-[16px] text-[#E2E2FE] mb-2'>Allow to:</div>
@@ -139,8 +143,8 @@ const CreateThread = () => {
                 </div>
                 <div className='flex justify-end items-end absolute right-[34px] bottom-[28px]'>
                     <button
-                        className={`w-[100px] h-[40px] ${isLoading ? 'bg-[#848DF9]/50' : 'bg-[#848DF9]'} drop-shadow-md rounded-[8px] flex justify-center items-center text-[#E2E2FE] cursor-pointer`}
-                        onClick={handleCreateThread}
+                        className={`w-[100px] h-[40px] bg-[#848DF9] drop-shadow-md rounded-[8px] flex justify-center items-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={handleCreateEcho}
                         disabled={isLoading}
                     >
                         {isLoading ? 'Creating...' : 'Create'}
@@ -148,7 +152,7 @@ const CreateThread = () => {
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default CreateThread;
+export default CreateEcho;

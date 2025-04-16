@@ -1,7 +1,7 @@
 "use client"
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMatrixById } from '../app/services/databaseService';
+import { getMatrixById } from '../services/databaseService';
 
 const MatrixContext = createContext();
 

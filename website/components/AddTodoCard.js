@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from 'react';
-import { database } from '../../config'; // Assuming this is your Firebase file path
+import { database } from '../config'; // Assuming this is your Firebase file path
 import { ref, push } from 'firebase/database';
 
 const AddTodoCard = (props) => {

@@ -1,3 +1,4 @@
+"use client"
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useMatrix } from '@/context/matrixContext';
@@ -25,8 +26,8 @@ const Track = () => {
             }
 
             if (matrix.track) {
-                // If matrix has a track, navigate to it
-                router.push(`/track?id=${matrix.track}`);
+                // If matrix has a track, navigate to it with clean URL
+                router.push(`/track/${matrix.track}`);
             } else {
                 // Matrix has no track, navigate to track page
                 // The track page will handle creating a track

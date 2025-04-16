@@ -1,8 +1,9 @@
+"use client"
 import { useDialogs } from "@/context/DialogsContext";
 import { useMatrix } from "@/context/matrixContext";
 import React, { useEffect, useState } from "react";
 import { ref, onValue } from "firebase/database";
-import { database } from "../../config";
+import { database } from "../config";
 import Link from "next/link";
 
 const Echos = () => {
@@ -122,28 +123,27 @@ const Echos = () => {
           <div className="flex flex-col gap-2">
             {echos.length > 0
               ? echos.map((echo) => (
-                  <Link
-                    key={echo.echo_id}
-                    href={`/echo/${echo.echo_id}`}
-                    className="flex items-center gap-3 cursor-pointer"
-                    onClick={() => handleEchoClick(echo.echo_id)}
-                  >
+                <Link
+                  key={echo.echo_id}
+                  href={`/echo/${echo.echo_id}`}
+                  className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => handleEchoClick(echo.echo_id)}
+                >
+                  <div>
+                    <img src="/voiceIcon.svg" alt="Voice Icon" />
+                  </div>
+                  <div className="text-[20px] text-[#000000] font-medium">
+                    {echo.name ||
+                      `Voice-ch-${echo.echo_id?.substring(5, 9) || "default"
+                      }`}
+                  </div>
+                  {activeEchoId === echo.echo_id && (
                     <div>
-                      <img src="/voiceIcon.svg" alt="Voice Icon" />
+                      <img src="/activeText.svg" alt="Active" />
                     </div>
-                    <div className="text-[20px] text-[#000000] font-medium">
-                      {echo.name ||
-                        `Voice-ch-${
-                          echo.echo_id?.substring(5, 9) || "default"
-                        }`}
-                    </div>
-                    {activeEchoId === echo.echo_id && (
-                      <div>
-                        <img src="/activeText.svg" alt="Active" />
-                      </div>
-                    )}
-                  </Link>
-                ))
+                  )}
+                </Link>
+              ))
               : ""}
           </div>
         </div>

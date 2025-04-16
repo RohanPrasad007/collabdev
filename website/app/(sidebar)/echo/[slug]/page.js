@@ -14,8 +14,8 @@ import {
   update,
 } from "firebase/database";
 import { database } from "@/config";
-import PresentUsers from "@/app/components/PresentUser";
-import InteractionTools from "@/app/components/InteractionTools";
+import PresentUsers from "@/components/PresentUser";
+import InteractionTools from "@/components/InteractionTools";
 import { useRouter } from "next/navigation";
 
 const servers = {
@@ -607,6 +607,9 @@ export default function EchoPage({ params }) {
         toggleMic={toggleMic}
         toggleCamera={toggleCamera}
         cutCall={cutCall}
+        isCameraOn={isCameraOn}
+        isMicOn={isMicOn}
+        isScreenSharing={isScreenSharing}
       />
     </div>
   );

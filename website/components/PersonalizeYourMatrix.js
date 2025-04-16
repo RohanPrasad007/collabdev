@@ -2,7 +2,7 @@ import { useDialogs } from '@/context/DialogsContext';
 import React, { useState, useRef } from 'react';
 import { createNewMatrix } from '../services/databaseService';
 import { useAuth } from '@/context/AuthContext'; // Assuming you have an auth context
-import { useMatrix } from '../../context/matrixContext'; // Import the useMatrix hook
+import { useMatrix } from '../context/matrixContext'; // Import the useMatrix hook
 
 const PersonalizeYourMatrix = () => {
     const { toggleMetrixDialog } = useDialogs();

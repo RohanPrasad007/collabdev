@@ -2,13 +2,13 @@
 import React, { useEffect, useState } from 'react'
 import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
-import SidebarContainer from '../app/components/SidebarContainer'
-import EmptyVoiceInvite from '../app/components/EmptyVoiceInvite'
-import InteractionTools from "../app/components/InteractionTools"
-import PresentUser from '../app/components/PresentUser'
-import CreateThread from '../app/components/CreateThread'
-import CreateEcho from '../app/components/CreateEcho'
-import PersonalizeYourMatrix from '../app/components/PersonalizeYourMatrix'
+import SidebarContainer from '../components/SidebarContainer'
+import EmptyVoiceInvite from '../components/EmptyVoiceInvite'
+import InteractionTools from "../components/InteractionTools"
+import PresentUser from '../components/PresentUser'
+import CreateThread from '../components/CreateThread'
+import CreateEcho from '../components/CreateEcho'
+import PersonalizeYourMatrix from '../components/PersonalizeYourMatrix'
 import { useDialogs } from '@/context/DialogsContext'
 import app from '@/config'
 

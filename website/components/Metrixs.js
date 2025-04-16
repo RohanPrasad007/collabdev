@@ -1,9 +1,10 @@
+"use client"
 import { useDialogs } from '@/context/DialogsContext';
 import { useAuth } from '@/context/AuthContext';
 import { useMatrix } from '@/context/matrixContext';
 import React, { useEffect, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
-import { database } from '../../config';
+import { database } from '../config';
 import { useRouter } from 'next/navigation';
 
 const Metrixs = () => {
@@ -55,15 +56,16 @@ const Metrixs = () => {
         if (window.location.pathname.includes('/track')) {
             if (selectedMatrix && selectedMatrix.track) {
                 // If on track page and matrix has track, navigate to that track
-                router.push(`/track?id=${selectedMatrix.track}`);
+                router.push(`/matrix/${matrixId}`);
             } else {
-                // If on track page but matrix has no track, go to /
-                router.push('/');
+                // If on track page but matrix has no track, go to matrix detail
+                router.push(`/matrix/${matrixId}`);
             }
+        } else {
+            // For all other cases, go to matrix detail page
+            router.push(`/matrix/${matrixId}`);
         }
     };
-
-    // Calculate position of active button
     const activeIndex = matrices.findIndex(matrix => matrix.id === currentMatrixId);
     const topOffset = 7.5 * 16 + activeIndex * 80;
     return (

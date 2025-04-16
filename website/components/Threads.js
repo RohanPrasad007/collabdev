@@ -1,16 +1,20 @@
+"use client"
 import { useDialogs } from '@/context/DialogsContext';
 import { useMatrix } from '@/context/matrixContext';
+import { useThread } from '@/context/ThreadContext';
 import React, { useEffect, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
-import { database } from '../../config';
+import { database } from '../config';
+import { useRouter } from 'next/navigation';
 
 const Threads = () => {
     const { toggleThreadDialog } = useDialogs();
     const { currentMatrixId } = useMatrix();
+    const { currentThreadId, setCurrentThreadId } = useThread();
     const [threads, setThreads] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeThreadId, setActiveThreadId] = useState(null);
-    const [toggleDropdown, setToggleDropdown] = useState(true)
+    const [toggleDropdown, setToggleDropdown] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         if (!currentMatrixId) {
@@ -62,8 +66,8 @@ const Threads = () => {
                             setLoading(false);
 
                             // Set the first thread as active if none is selected
-                            if (threadDetails.length > 0 && !activeThreadId) {
-                                setActiveThreadId(threadDetails[0].id);
+                            if (threadDetails.length > 0 && !currentThreadId) {
+                                setCurrentThreadId(threadDetails[0].id);
                             }
                         }
                     }, {
@@ -80,25 +84,30 @@ const Threads = () => {
         });
 
         return () => unsubscribe();
-    }, [currentMatrixId]);
+    }, [currentMatrixId, currentThreadId, setCurrentThreadId]);
 
     const handleThreadClick = (threadId) => {
-        setActiveThreadId(threadId);
-        // You might want to update a context or perform other actions when selecting a thread
+        // Update the current thread in context
+        setCurrentThreadId(threadId);
+
+        // Log to console
+        console.log("Selected thread ID:", threadId);
+
+        // Navigate to the thread-specific URL
+        router.push(`/thread/${threadId}`);
     };
 
     const handleDropdown = () => {
         setToggleDropdown(!toggleDropdown)
     }
-
     return (
         <div>
             <div className='h-[60px] border-[#020222] border-b-2 flex justify-start gap-2 items-end px-2 py-1 mt-[40px]'>
-                <div className='flex  items-center gap-8 '>
+                <div className='flex items-center gap-8'>
                     <div className='mt-[10px] cursor-pointer'>
                         <img src='/dropdown.svg' onClick={handleDropdown} />
                     </div>
-                    <div className='text-[24px] text-[#000000] font-medium '>
+                    <div className='text-[24px] text-[#000000] font-medium'>
                         Threads
                     </div>
                     <div>
@@ -109,34 +118,32 @@ const Threads = () => {
             {!toggleDropdown ? (
                 ""
             ) : (
-                <div className='  flex  items-end justify-center  py-1 mt-[15px]'>
+                <div className='flex items-end justify-center py-1 mt-[15px]'>
                     <div className='flex flex-col gap-2'>
-
                         {threads.map((thread) => (
-                            <div className='flex  items-center gap-3 '>
-                                <div >
+                            <div
+                                key={thread.id}
+                                className='flex items-center gap-3 cursor-pointer'
+                                onClick={() => handleThreadClick(thread.id)}
+                            >
+                                <div>
                                     <img src='/textIcon.svg' />
                                 </div>
-                                <div className='text-[20px] text-[#000000] font-medium '>
+                                <div className='text-[20px] text-[#000000] font-medium'>
                                     {thread.name || `Thread ${thread.id.substring(0, 8)}`}
-
                                 </div>
-                                {activeThreadId === thread.id && (
+                                {currentThreadId === thread.id && (
                                     <div>
                                         <img src='/activeText.svg' alt="Active" />
                                     </div>
                                 )}
                             </div>
-
                         ))}
-
                     </div>
-
                 </div>
             )}
-
         </div>
     )
 }
 
-export default Threads
+export default Threads;
