@@ -106,9 +106,11 @@ function page({ params }) {
     fetchThreadData();
   }, [id]);
 
+  console.log("threadData", threadData)
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center bg-[#848DF9] w-full rounded-[8px] h-[98vh]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full animate-spin mx-auto"></div>
           <p className="mt-3 text-gray-700">Loading thread...</p>
@@ -119,7 +121,7 @@ function page({ params }) {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-[#848DF9]">
         <div className="text-center p-6 bg-white rounded-lg shadow-md">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -142,17 +144,17 @@ function page({ params }) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 w-full">
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <div className="flex-1 overflow-hidden">
-          <Thread threadId={id} userId={user?.uid} />
+    <div className="flex h-[98vh]  w-full ">
+      <div className="flex-1 flex flex-col h-[98vh] overflow-hidden">
+        <div className="flex-1 overflow-hidden rounded-[8px]">
+          <Thread threadId={id} userId={user?.uid} threadData={threadData} />
         </div>
       </div>
     </div>
   );
 }
 
-const Thread = ({ threadId, userId }) => {
+const Thread = ({ threadId, userId, threadData }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -451,14 +453,14 @@ const Thread = ({ threadId, userId }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-full bg-[#848DF9] rounded-[8px]">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
+      <div className="bg-[#848DF9]  border-b border-[#020222] px-4 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-3">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Thread Discussion
+          <h2 className="text-[24px] font-semibold text-[#000000]">
+            {threadData.name}
           </h2>
-          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+          <span className="text-xs px-2 py-1 bg-[#181836] text-[#848DF9] rounded-full border-[#848DF9] border-[1px]">
             {messages.length} messages
           </span>
         </div>
@@ -469,43 +471,38 @@ const Thread = ({ threadId, userId }) => {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${
-              message.userId === userId ? "justify-end" : "justify-start"
-            }`}
+            className={`flex ${message.userId === userId ? "justify-end" : "justify-start"
+              }`}
           >
             <div
-              className={`flex max-w-[80%] ${
-                message.userId === userId ? "flex-row-reverse" : "flex-row"
-              }`}
+              className={`flex max-w-[80%] ${message.userId === userId ? "flex-row-reverse" : "flex-row"
+                }`}
             >
               <Avatar
                 src={message.userAvatar}
                 name={message.userName}
-                className={`h-8 w-8 rounded-full flex-shrink-0 ${
-                  message.userId === userId ? "ml-2" : "mr-2"
-                }`}
+                className={`h-8 w-8 rounded-full flex-shrink-0  ${message.userId === userId ? "ml-2" : "mr-2"
+                  }`}
               />
 
               <div>
                 <div
-                  className={`flex items-center ${
-                    message.userId === userId ? "justify-end" : "justify-start"
-                  }`}
+                  className={`flex items-center ${message.userId === userId ? "justify-end" : "justify-start"
+                    }`}
                 >
-                  <span className="text-xs text-gray-500 mx-1">
+                  <span className="text-xs text-[#333333] mx-2">
                     {formatTimestamp(message.timestamp)}
                   </span>
-                  <span className="font-medium text-sm text-gray-700">
+                  <span className="font-medium text-md text-[#000000]">
                     {message.userName}
                   </span>
                 </div>
 
                 <div
-                  className={`mt-1 p-3 rounded-lg ${
-                    message.userId === userId
-                      ? "bg-blue-500 text-white rounded-tr-none"
-                      : "bg-white border border-gray-200 rounded-tl-none"
-                  }`}
+                  className={`mt-1 p-3 rounded-lg ${message.userId === userId
+                    ? "bg-[#5A5FB7] text-white rounded-tr-none"
+                    : "bg-white border border-gray-200 rounded-tl-none"
+                    }`}
                 >
                   {message.content && (
                     <>
@@ -529,11 +526,10 @@ const Thread = ({ threadId, userId }) => {
                         </div>
                       ) : (
                         <p
-                          className={`text-sm ${
-                            message.userId === userId
-                              ? "text-white"
-                              : "text-gray-700"
-                          }`}
+                          className={`text-sm ${message.userId === userId
+                            ? "text-white"
+                            : "text-gray-700"
+                            }`}
                         >
                           {message.content}
                         </p>
@@ -548,29 +544,26 @@ const Thread = ({ threadId, userId }) => {
                           href={file.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`flex items-center p-2 rounded ${
-                            message.userId === userId
-                              ? "bg-blue-600 hover:bg-blue-700"
-                              : "bg-gray-100 hover:bg-gray-200"
-                          }`}
+                          className={`flex items-center p-2 rounded ${message.userId === userId
+                            ? "bg-[#848DF9] hover:bg-[#848DF9]/70"
+                            : "bg-gray-100 hover:bg-gray-200"
+                            }`}
                         >
                           {getFileIcon(file.type)}
                           <div className="ml-2 flex-1 truncate">
                             <p
-                              className={`text-xs font-medium ${
-                                message.userId === userId
-                                  ? "text-white"
-                                  : "text-gray-700"
-                              }`}
+                              className={`text-xs font-medium ${message.userId === userId
+                                ? "text-white"
+                                : "text-gray-700"
+                                }`}
                             >
                               {file.name}
                             </p>
                             <p
-                              className={`text-xs ${
-                                message.userId === userId
-                                  ? "text-blue-200"
-                                  : "text-gray-500"
-                              }`}
+                              className={`text-xs ${message.userId === userId
+                                ? "text-blue-200"
+                                : "text-gray-500"
+                                }`}
                             >
                               {formatFileSize(file.size)}
                             </p>
@@ -589,7 +582,7 @@ const Thread = ({ threadId, userId }) => {
 
       {/* File Preview Area */}
       {uploadedFiles.length > 0 && (
-        <div className="bg-gray-50 p-2 border-t border-gray-200">
+        <div className="bg-[#020222] p-2 border-t border-[#848DF9]">
           <div className="flex flex-wrap gap-2">
             {uploadedFiles.map((file, index) => (
               <div
@@ -627,21 +620,21 @@ const Thread = ({ threadId, userId }) => {
 
       {/* Upload Progress */}
       {isUploading && (
-        <div className="bg-blue-50 p-2">
+        <div className="bg-[#020222] p-2">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-blue-500 h-2 rounded-full"
+              className="bg-[#848DF9] h-2 rounded-full"
               style={{ width: `${uploadProgress}%` }}
             ></div>
           </div>
-          <p className="text-xs text-center mt-1 text-blue-700">
+          <p className="text-xs text-center mt-2 text-[#E2E2FE]">
             Uploading... {Math.round(uploadProgress)}%
           </p>
         </div>
       )}
 
       {/* Message Input */}
-      <div className="bg-white p-3 border-t border-gray-200">
+      <div className="bg-[#848DF9] p-3 border-t border-[#020222]">
         <form
           onSubmit={handleSendMessage}
           className="flex items-center space-x-2"
@@ -680,18 +673,17 @@ const Thread = ({ threadId, userId }) => {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type your message..."
-              className="w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent text-gray-700"
+              className="w-full p-2 px-5 border border-[#848DF9] rounded-full focus:outline-none  focus:border-transparent text-[#E2E2FE] bg-[#181836]"
             />
           </div>
 
           <button
             type="submit"
             disabled={!newMessage.trim() && uploadedFiles.length === 0}
-            className={`p-2 rounded-full ${
-              !newMessage.trim() && uploadedFiles.length === 0
-                ? "text-gray-400 bg-gray-100"
-                : "text-white bg-blue-500 hover:bg-blue-600"
-            } focus:outline-none`}
+            className={`p-2 rounded-full ${!newMessage.trim() && uploadedFiles.length === 0
+              ? "text-gray-400 bg-gray-100"
+              : "text-white bg-[#E433F5] hover:bg-[#E433F5]/70"
+              } focus:outline-none`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
