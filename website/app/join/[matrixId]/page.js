@@ -107,9 +107,8 @@ export default function JoinMatrix({ params }) {
           <button
             onClick={handleJoinMatrix}
             disabled={joining}
-            className={`w-full py-2 px-4 rounded-md text-white ${
-              joining ? "bg-blue-400" : "bg-blue-500 hover:bg-blue-600"
-            }`}
+            className={`w-full py-2 px-4 rounded-md text-white ${joining ? "bg-blue-400" : "bg-blue-500 hover:bg-blue-600"
+              }`}
           >
             {joining ? "Joining..." : "Join Matrix"}
           </button>
