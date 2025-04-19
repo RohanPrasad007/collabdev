@@ -8,6 +8,7 @@ import {
   onValue,
   off,
   serverTimestamp,
+  getDatabase,
 } from "firebase/database";
 import { database, storage } from "@/config";
 import {
@@ -162,6 +163,7 @@ const Thread = ({ threadId, userId, threadData }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [encryptionKey, setEncryptionKey] = useState(null);
   const [isKeyLoaded, setIsKeyLoaded] = useState(false);
+  const [userDataMap, setUserDataMap] = useState({});
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const { user } = useAuth();
@@ -451,7 +453,37 @@ const Thread = ({ threadId, userId, threadData }) => {
       return date.toLocaleDateString();
     }
   };
+  const getUserData = async (userId) => {
+    const db = getDatabase();
+    const userRef = ref(db, `users/${userId}`);
+    const snapshot = await get(userRef);
 
+    if (snapshot.exists()) {
+      return snapshot.val();
+    } else {
+      return { userName: "Unknown User", profilePicture: "/default-profile.png" };
+    }
+  };
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const newUserDataMap = { ...userDataMap };
+
+      // Only fetch data for users we don't already have
+      for (const message of messages) {
+        if (!newUserDataMap[message.userId]) {
+          const userData = await getUserData(message.userId);
+          newUserDataMap[message.userId] = userData;
+        }
+      }
+
+      setUserDataMap(newUserDataMap);
+    };
+
+    loadUserData();
+  }, [messages]);
+
+  console.log("messages", messages)
   return (
     <div className="flex flex-col h-full bg-[#848DF9] rounded-[8px]">
       {/* Header */}
@@ -468,115 +500,120 @@ const Thread = ({ threadId, userId, threadData }) => {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.userId === userId ? "justify-end" : "justify-start"
-              }`}
-          >
+        {messages.map((message) => {
+          const userData = userDataMap[message.userId] || {
+            userName: message.userName,
+            profilePicture: message.userAvatar
+          };
+
+          console.log("userData", userData)
+          return (
             <div
-              className={`flex max-w-[80%] ${message.userId === userId ? "flex-row-reverse" : "flex-row"
+              key={message.id}
+              className={`flex ${message.userId === userId ? "justify-end" : "justify-start"
                 }`}
             >
-              <Avatar
-                src={message.userAvatar}
-                name={message.userName}
-                className={`h-8 w-8 rounded-full flex-shrink-0  ${message.userId === userId ? "ml-2" : "mr-2"
+              <div
+                className={`flex max-w-[80%] ${message.userId === userId ? "flex-row-reverse" : "flex-row"
                   }`}
-              />
+              >
+                <Avatar
+                  src={userData.ProfilePicture} // Use fetched profile pic or fallback
+                  name={userData.userName} // Use fetched username or fallback
+                  className={`h-8 w-8 rounded-full flex-shrink-0 ${message.userId === userId ? "ml-2" : "mr-2"}`}
+                />
 
-              <div>
-                <div
-                  className={`flex items-center ${message.userId === userId ? "justify-end" : "justify-start"
-                    }`}
-                >
-                  <span className="text-xs text-[#333333] mx-2">
-                    {formatTimestamp(message.timestamp)}
-                  </span>
-                  <span className="font-medium text-md text-[#000000]">
-                    {message.userName}
-                  </span>
-                </div>
+                <div>
+                  <div
+                    className={`flex items-center ${message.userId === userId ? "justify-end" : "justify-start"
+                      }`}
+                  >
+                    <span className="text-xs text-[#333333] mx-2">
+                      {formatTimestamp(message.timestamp)}
+                    </span>
+                    <span className="font-medium text-md text-[#000000]">
+                      {userData.userName}
+                    </span>
+                  </div>
 
-                <div
-                  className={`mt-1 p-3 rounded-lg ${message.userId === userId
-                    ? "bg-[#5A5FB7] text-white rounded-tr-none"
-                    : "bg-white border border-gray-200 rounded-tl-none"
-                    }`}
-                >
-                  {message.content && (
-                    <>
-                      {message.encrypted && !message.isDecrypted ? (
-                        <div className="text-sm italic text-gray-400">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 inline mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                            />
-                          </svg>
-                          Encrypted message (decryption failed)
-                        </div>
-                      ) : (
-                        <p
-                          className={`text-sm ${message.userId === userId
-                            ? "text-white"
-                            : "text-gray-700"
-                            }`}
-                        >
-                          {message.content}
-                        </p>
-                      )}
-                    </>
-                  )}
-                  {message.files && message.files.length > 0 && (
-                    <div className="mt-2 space-y-2">
-                      {message.files.map((file, index) => (
-                        <a
-                          key={index}
-                          href={file.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`flex items-center p-2 rounded ${message.userId === userId
-                            ? "bg-[#848DF9] hover:bg-[#848DF9]/70"
-                            : "bg-gray-100 hover:bg-gray-200"
-                            }`}
-                        >
-                          {getFileIcon(file.type)}
-                          <div className="ml-2 flex-1 truncate">
-                            <p
-                              className={`text-xs font-medium ${message.userId === userId
-                                ? "text-white"
-                                : "text-gray-700"
-                                }`}
+                  <div
+                    className={`mt-1 p-3 rounded-lg ${message.userId === userId
+                      ? "bg-[#5A5FB7] text-white rounded-tr-none"
+                      : "bg-[#5A5FB7] text-white  rounded-tl-none"
+                      }`}
+                  >
+                    {message.content && (
+                      <>
+                        {message.encrypted && !message.isDecrypted ? (
+                          <div className="text-sm italic text-white">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 inline mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
                             >
-                              {file.name}
-                            </p>
-                            <p
-                              className={`text-xs ${message.userId === userId
-                                ? "text-blue-200"
-                                : "text-gray-500"
-                                }`}
-                            >
-                              {formatFileSize(file.size)}
-                            </p>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                              />
+                            </svg>
+                            Encrypted message (decryption failed)
                           </div>
-                        </a>
-                      ))}
-                    </div>
-                  )}
+                        ) : (
+                          <p
+                            className={`text-sm text-white
+                            }`}
+                          >
+                            {message.content}
+                          </p>
+                        )}
+                      </>
+                    )}
+                    {message.files && message.files.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {message.files.map((file, index) => (
+                          <a
+                            key={index}
+                            href={file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center p-2 rounded ${message.userId === userId
+                              ? "bg-[#848DF9] hover:bg-[#848DF9]/70"
+                              : "bg-gray-100 hover:bg-gray-200"
+                              }`}
+                          >
+                            {getFileIcon(file.type)}
+                            <div className="ml-2 flex-1 truncate">
+                              <p
+                                className={`text-xs font-medium ${message.userId === userId
+                                  ? "text-white"
+                                  : "text-gray-700"
+                                  }`}
+                              >
+                                {file.name}
+                              </p>
+                              <p
+                                className={`text-xs ${message.userId === userId
+                                  ? "text-blue-200"
+                                  : "text-gray-500"
+                                  }`}
+                              >
+                                {formatFileSize(file.size)}
+                              </p>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
         <div ref={messagesEndRef} />
       </div>
 

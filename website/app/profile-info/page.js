@@ -75,23 +75,23 @@ const ProfileInfo = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (!preview || !email || !githubId || !userId) {
             toast.error("Please fill all the fields.");
             return;
         }
-    
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             toast.error("Please enter a valid email address.");
             return;
         }
-    
+
         try {
             setIsLoading(true);
             const user = auth.currentUser;
             if (!user) throw new Error("User is not authenticated.");
-    
+
             // Store full image data in Realtime Database
             const userData = {
                 userName: userId,
@@ -101,11 +101,11 @@ const ProfileInfo = () => {
                 hasCustomImage: true,
                 lastUpdated: new Date().toISOString()
             };
-    
+
             // Update Realtime Database first
             const userRef = ref(database, `users/${user.uid}`);
             await set(userRef, userData);
-    
+
             // Use a generic photoURL for Authentication to avoid size limitations
             try {
                 await updateProfile(user, {
@@ -115,14 +115,14 @@ const ProfileInfo = () => {
                 console.warn("Failed to update Authentication profile picture, but database update succeeded:", authError);
                 // Continue execution since the main functionality (database update) succeeded
             }
-    
+
             // Show toast and wait for it to complete
             await new Promise((resolve) => {
                 toast.success("Profile saved successfully!", {
                     onClose: () => resolve()
                 });
             });
-    
+
             // Redirect after toast is closed
             router.push("/");
         } catch (error) {
@@ -133,7 +133,6 @@ const ProfileInfo = () => {
         }
     };
 
-    // Rest of the component remains the same
     return (
         <>
             <div className="h-screen bg-[#020222] flex justify-center items-center relative">
