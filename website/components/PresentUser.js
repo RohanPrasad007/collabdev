@@ -16,13 +16,12 @@ const PresentUsers = ({ userCount = 1, localVideoRef, remoteVideoRef }) => {
   }, [remoteVideoRef]);
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-[80%] p-4">
+    <div className="flex flex-row justify-center items-center min-h-[80%] p-4">
       <div
         className={`
-          ${
-            userCount > 2
-              ? "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 w-full max-w-6xl gap-8 "
-              : "flex flex-col gap-8 w-[500px]"
+          ${userCount >= 2
+            ? "grid grid-cols-2 md:grid-cols-2 lg:grid-row-2 w-full max-w-6xl gap-8 "
+            : "flex flex-col gap-8 w-[500px]"
           }
         `}
       >
