@@ -9,7 +9,7 @@ import Join from './Join'
 
 const SidebarContainer = () => {
     return (
-        <div className='w-[20%]  bg-[#C0C3E3] rounded-[8px] flex relative'>
+        <div className='w-[100%] h-full  bg-[#C0C3E3] rounded-[8px] flex relative'>
             <Metrixs />
             <div className='w-full'>
                 <Join />

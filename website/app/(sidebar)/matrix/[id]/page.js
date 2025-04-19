@@ -4,7 +4,7 @@ import React from 'react'
 
 const page = () => {
     return (
-        <div className='w-[80%] bg-[#848DF9] rounded-[8px] px-7 py-3  h-[98vh] relative overflow-hidden'>
+        <div className=' bg-[#848DF9] rounded-[8px] px-7 py-3  h-[98vh] relative overflow-hidden'>
             <div className='flex justify-between'>
                 <div className='flex gap-2 items-center '>
                     <img src='/voiceIcon.svg' className='w-[28px] h-[28px]' />
