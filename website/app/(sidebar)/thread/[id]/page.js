@@ -16,7 +16,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
-import Avatar from "@/app/components/Avatar";
+import Avatar from "/components/Avatar";
 import { useAuth } from "@/context/AuthContext";
 
 // Encryption Utilities

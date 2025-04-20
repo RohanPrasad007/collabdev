@@ -5,6 +5,9 @@ import { database } from '../config'; // Import your firebase setup
 import { ref, onValue, update, set, remove } from 'firebase/database';
 
 const TrackBoard = (props) => {
+    const { trackData } = props;
+    const trackId = trackData?.track_id;
+
     // Initialize with empty data structure that matches your drag-and-drop requirements
     const [boardData, setBoardData] = useState({
         columns: {
@@ -30,9 +33,14 @@ const TrackBoard = (props) => {
 
     const [loading, setLoading] = useState(true);
 
-    // Fetch tasks from Firebase
+    // Fetch tasks from Firebase under this specific track
     useEffect(() => {
-        const tasksRef = ref(database, 'tasks');
+        if (!trackId) {
+            setLoading(false);
+            return;
+        }
+
+        const tasksRef = ref(database, `tracks/${trackId}/tasks`);
 
         const unsubscribe = onValue(tasksRef, (snapshot) => {
             const tasksData = snapshot.val();
@@ -96,18 +104,22 @@ const TrackBoard = (props) => {
 
         // Cleanup function
         return () => unsubscribe();
-    }, []);
+    }, [trackId]);
 
     // Update task status in Firebase when dragged between columns
     const updateTaskStatus = (taskId, newStatus) => {
-        const taskRef = ref(database, `tasks/${taskId}`);
+        if (!trackId) return;
+
+        const taskRef = ref(database, `tracks/${trackId}/tasks/${taskId}`);
         update(taskRef, { status: newStatus });
     };
 
     // Delete task from Firebase and local state
     const deleteTask = (taskId, columnId) => {
+        if (!trackId) return;
+
         // Remove from Firebase
-        const taskRef = ref(database, `tasks/${taskId}`);
+        const taskRef = ref(database, `tracks/${trackId}/tasks/${taskId}`);
         remove(taskRef)
             .then(() => {
                 // Update local state
@@ -220,6 +232,12 @@ const TrackBoard = (props) => {
         </div>;
     }
 
+    if (!trackId) {
+        return <div className="flex justify-center items-center h-full text-white">
+            <p>No track selected</p>
+        </div>;
+    }
+
     return (
         <DragDropContext onDragEnd={handleDragEnd} className="relative m-0">
             <Droppable droppableId="board" type="column" direction="horizontal">
@@ -265,7 +283,7 @@ const TrackBoard = (props) => {
                                                         <div
                                                             ref={provided.innerRef}
                                                             {...provided.droppableProps}
-                                                            className={`h-auto  transition-colors ${snapshot.isDraggingOver ? 'bg-opacity-50 bg-[#848DF9]' : ''
+                                                            className={`h-auto transition-colors ${snapshot.isDraggingOver ? 'bg-opacity-50 bg-[#848DF9]' : ''
                                                                 }`}
                                                         >
                                                             {tasks.map((task, index) => (
@@ -279,7 +297,7 @@ const TrackBoard = (props) => {
                                                                             ref={provided.innerRef}
                                                                             {...provided.draggableProps}
                                                                             {...provided.dragHandleProps}
-                                                                            className={`bg-[#020222] border-[#848DF9] border-2 p-4 mb-6 rounded-[8px]  flex  justify-between items-start
+                                                                            className={`bg-[#020222] border-[#848DF9] border-2 p-4 mb-6 rounded-[8px] flex justify-between items-start
                                                                                 transition-all text-white h-[100px]
                                                                                 ${snapshot.isDragging ? 'shadow-lg ring-2 ring-[#848DF9]' : 'shadow-sm'}`}
                                                                         >
