@@ -2,7 +2,7 @@
 import { useDialogs } from '@/context/DialogsContext';
 import { useAuth } from '@/context/AuthContext';
 import { useMatrix } from '@/context/matrixContext';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../config';
 import { useRouter } from 'next/navigation';
@@ -10,66 +10,43 @@ import { useRouter } from 'next/navigation';
 const Metrixs = () => {
     const { toggleMetrixDialog } = useDialogs();
     const { user } = useAuth();
-    const { currentMatrixId, setCurrentMatrixId } = useMatrix();
-    const [matrices, setMatrices] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const {
+        currentMatrixId,
+        setCurrentMatrixId,
+        matrices,
+        isLoading
+    } = useMatrix();
     const router = useRouter();
 
-    useEffect(() => {
-        if (!user) {
-            setLoading(false);
-            return;
-        }
-
-        const matricesRef = ref(database, 'matrices');
-        const unsubscribe = onValue(matricesRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const matricesData = snapshot.val();
-                const userMatrices = Object.entries(matricesData)
-                    .filter(([_, matrix]) => matrix.users && matrix.users.includes(user.uid))
-                    .map(([id, data]) => ({
-                        id,
-                        ...data
-                    }));
-
-                setMatrices(userMatrices);
-            } else {
-                setMatrices([]);
-            }
-            setLoading(false);
-        }, (error) => {
-            console.error('Error fetching matrices:', error);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, [user]);
+    // Filter matrices to only show those the user has access to
+    const userMatrices = matrices.filter(matrix =>
+        matrix.users && matrix.users.includes(user?.uid)
+    );
 
     const handleMatrixClick = (matrixId) => {
-        // First update the current matrix
         setCurrentMatrixId(matrixId);
 
         // Find the matrix data
-        const selectedMatrix = matrices.find(matrix => matrix.id === matrixId);
+        const selectedMatrix = userMatrices.find(matrix => matrix.id === matrixId);
 
         // Handle navigation based on current page and matrix data
         if (window.location.pathname.includes('/track')) {
             if (selectedMatrix && selectedMatrix.track) {
-                // If on track page and matrix has track, navigate to that track
                 router.push(`/matrix/${matrixId}`);
             } else {
-                // If on track page but matrix has no track, go to matrix detail
                 router.push(`/matrix/${matrixId}`);
             }
         } else {
-            // For all other cases, go to matrix detail page
             router.push(`/matrix/${matrixId}`);
         }
     };
-    const activeIndex = matrices.findIndex(matrix => matrix.id === currentMatrixId);
-    const topOffset = 7.5 * 16 + activeIndex * 80;
+
+    const activeIndex = userMatrices.findIndex(matrix => matrix.id === currentMatrixId);
+    const topOffset = 7.5 * 16 + (activeIndex !== -1 ? activeIndex * 80 : 0);
+
     return (
         <div className='w-[40%] border-[#020222] border-r-2 relative'>
+            {/* Your existing JSX remains the same, just replace matrices with userMatrices */}
             <div className='h-[70px] mx-4 my-4 flex flex-col justify-center'>
                 <div className='bg-[#020222] w-[57.92px] h-[57.92px] rounded-full flex justify-center items-center mx-auto'>
                     <img src="/Logo.svg" alt="Logo" />
@@ -78,12 +55,12 @@ const Metrixs = () => {
             </div>
 
             <div className='my-8 flex flex-col gap-5'>
-                {loading ? (
+                {isLoading ? (
                     ""
                 ) : (
                     <>
-                        {matrices.length > 0 ? (
-                            matrices.map((matrix) => (
+                        {userMatrices.length > 0 ? (
+                            userMatrices.map((matrix) => (
                                 <div
                                     key={matrix.id}
                                     className='flex flex-col items-center cursor-pointer'
@@ -136,6 +113,5 @@ const Metrixs = () => {
         </div>
     );
 };
-
 
 export default Metrixs;

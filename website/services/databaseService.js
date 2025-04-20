@@ -271,3 +271,46 @@ export const updateMatrixTrack = async (matrixId, trackId) => {
     throw error;
   }
 };
+
+// Add these functions to your databaseService.js file
+
+// Get all matrices
+export const getAllMatrices = async () => {
+  try {
+    const matricesRef = ref(database, 'matrices');
+    const snapshot = await get(matricesRef);
+
+    if (snapshot.exists()) {
+      // Convert the object of matrices to an array
+      const matricesObject = snapshot.val();
+      return Object.keys(matricesObject).map(key => matricesObject[key]);
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error getting all matrices:', error);
+    throw error;
+  }
+};
+
+// Get all threads
+export const getAllThreads = async () => {
+  try {
+    const threadsRef = ref(database, 'threads');
+    const snapshot = await get(threadsRef);
+
+    if (snapshot.exists()) {
+      // Convert the object of threads to an array
+      const threadsObject = snapshot.val();
+      return Object.keys(threadsObject).map(key => ({
+        thread_id: key,
+        ...threadsObject[key]
+      }));
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error getting all threads:', error);
+    throw error;
+  }
+};
