@@ -267,7 +267,7 @@ export const updateMatrixTrack = async (matrixId, trackId) => {
     await update(matrixRef, { track: trackId });
     return trackId;
   } catch (error) {
-    console.error('Error updating matrix track:', error);
+    console.error("Error updating matrix track:", error);
     throw error;
   }
 };

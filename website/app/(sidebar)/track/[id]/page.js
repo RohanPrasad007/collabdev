@@ -1,21 +1,20 @@
 "use client"
 import React, { useState, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import TrackBoard from '../../../../components/TrackBoard'
 import AddTodoCard from '../../../../components/AddTodoCard'
 import { getTrackById, getMatrixById, createNewTrack, updateMatrixTrack } from '../../../../services/databaseService'
 import { useMatrix } from '@/context/matrixContext'
 import { useAuth } from '@/context/AuthContext'
 
-const page = () => {
-    const [onclose, setOnclose] = useState(false)
+const TrackPage = () => {
     const [openAddTask, setOpenAddTask] = useState(false)
     const [trackData, setTrackData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
-    const searchParams = useSearchParams()
-    const trackId = searchParams.get('id')
+    const params = useParams()
+    const trackId = params.id // Get track ID from path parameter
     const { currentMatrixId } = useMatrix()
     const { user } = useAuth()
     const router = useRouter()
@@ -44,8 +43,10 @@ const page = () => {
                         const track = await getTrackById(matrix.track)
                         if (track) {
                             setTrackData(track)
-                            // Update URL to include track ID
-                            router.push(`/track?id=${matrix.track}`)
+                            // Update URL to include track ID - Only if different from current URL
+                            if (trackId !== matrix.track) {
+                                router.replace(`/track/${matrix.track}`)
+                            }
                         }
                     } else if (matrix) {
                         // Matrix exists but has no track, create one
@@ -59,7 +60,7 @@ const page = () => {
 
                         setTrackData(newTrack)
                         // Update URL to include new track ID
-                        router.push(`/track?id=${newTrack.track_id}`)
+                        router.replace(`/track/${newTrack.track_id}`)
                     } else {
                         // No matrix found, redirect to /
                         router.push('/')
@@ -115,4 +116,4 @@ const page = () => {
     )
 }
 
-export default page
+export default TrackPage

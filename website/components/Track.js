@@ -26,12 +26,16 @@ const Track = () => {
             }
 
             if (matrix.track) {
-                // If matrix has a track, navigate to it with clean URL
+                // If matrix has a track, navigate to it
                 router.push(`/track/${matrix.track}`);
             } else {
-                // Matrix has no track, navigate to track page
-                // The track page will handle creating a track
-                router.push('/track');
+                // Create a new track, then navigate
+                const newTrack = await createNewTrack({
+                    name: "Main Track",
+                    created_by: user?.uid || null
+                });
+                await updateMatrixTrack(currentMatrixId, newTrack.track_id);
+                router.push(`/track/${newTrack.track_id}`);
             }
         } catch (error) {
             console.error("Error handling track navigation:", error);

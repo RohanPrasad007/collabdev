@@ -81,7 +81,7 @@ export const MatrixProvider = ({ children }) => {
           if (pathname && pathname.includes('/track')) {
             // If matrix has track, navigate to it
             if (matrix && matrix.track) {
-              router.push(`/track?id=${matrix.track}`);
+              router.push(`/track/${matrix.track}`);
             } else {
               // If no track, go to /
               router.push('/');
