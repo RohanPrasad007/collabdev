@@ -89,7 +89,7 @@ const TrackPage = () => {
                     <div className='w-full bg-[#848DF9] rounded-[8px] px-7 py-3 h-[98vh] overflow-hidden'>
                         {loading ? (
                             <div className="flex items-center justify-center h-full">
-                                <p className="text-white text-xl">Loading track data...</p>
+                                <span class="loader"></span>
                             </div>
                         ) : error ? (
                             <div className="flex items-center justify-center h-full">

@@ -9,6 +9,7 @@ import {
   off,
   serverTimestamp,
   getDatabase,
+  set,
 } from "firebase/database";
 import { database, storage } from "@/config";
 import {
@@ -112,10 +113,7 @@ function page({ params }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center bg-[#848DF9] w-full rounded-[8px] h-[98vh]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full animate-spin mx-auto"></div>
-          <p className="mt-3 text-gray-700">Loading thread...</p>
-        </div>
+        <span class="loader"></span>
       </div>
     );
   }
