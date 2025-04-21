@@ -566,15 +566,20 @@ export default function EchoPage({ params }) {
 
   // Render loading/error states
   if (loading) {
-    return <div className="w-full bg-[#848DF9] rounded-[8px] px-7 py-3 h-[98vh] relative overflow-hidden flex justify-center items-center">
-      <span class="loader"></span>
-    </div>;
+    return (
+      <div className="w-full bg-[#848DF9] rounded-[8px] px-7 py-3 h-[98vh] relative overflow-hidden flex justify-center items-center">
+        <span className="loader"></span>
+      </div>
+    );
   }
   if (error) {
     return (
       <div className="w-full bg-[#848DF9] rounded-[8px] px-7 py-3 h-[98vh] relative overflow-hidden flex justify-center items-start">
         <div className="flex justify-center text-center flex-col items-center">
-          <img src="/error.png" className="w-[300px]  h-[300px]  rounded-3xl mt-44" />
+          <img
+            src="/error.png"
+            className="w-[300px]  h-[300px]  rounded-3xl mt-44"
+          />
           <p className="text-white text-[24px] font-bold whitespace-normal break-words max-w-lg mx-auto mt-4 text-center">
             {error}
           </p>
@@ -583,11 +588,13 @@ export default function EchoPage({ params }) {
     );
   }
   if (!echoData) {
-    return <div className="w-full bg-[#848DF9] rounded-[8px] px-7 py-3 h-[98vh] relative overflow-hidden flex justify-center items-center">
-      <p className="text-white text-[24px] font-bold whitespace-normal break-words max-w-lg mx-auto mt-4 text-center">
-        No echo data found
-      </p>
-    </div>;
+    return (
+      <div className="w-full bg-[#848DF9] rounded-[8px] px-7 py-3 h-[98vh] relative overflow-hidden flex justify-center items-center">
+        <p className="text-white text-[24px] font-bold whitespace-normal break-words max-w-lg mx-auto mt-4 text-center">
+          No echo data found
+        </p>
+      </div>
+    );
   }
 
   // Main render
