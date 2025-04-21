@@ -108,7 +108,7 @@ function page({ params }) {
     fetchThreadData();
   }, [id]);
 
-  console.log("threadData", threadData)
+  console.log("threadData", threadData);
 
   if (loading) {
     return (
@@ -170,17 +170,18 @@ const Thread = ({ threadId, userId, threadData }) => {
   useEffect(() => {
     const initEncryption = async () => {
       try {
-        if (!user?.uid) return;
-
-        const keyRef = ref(database, `userKeys/${user.uid}/${threadId}`);
+        const keyRef = ref(database, `threads/${threadId}/encryptionKey`);
         const keySnapshot = await get(keyRef);
 
         if (keySnapshot.exists()) {
           const key = await importKey(keySnapshot.val());
           setEncryptionKey(key);
         } else {
+          // Generate new key for this thread
           const key = await generateKey();
           const exportedKey = await exportKey(key);
+
+          // Store the key with the thread (accessible to all members)
           await set(keyRef, exportedKey);
           setEncryptionKey(key);
         }
@@ -188,31 +189,31 @@ const Thread = ({ threadId, userId, threadData }) => {
         setIsKeyLoaded(true);
       } catch (error) {
         console.error("Encryption initialization failed:", error);
-        setIsKeyLoaded(true);
+        setIsKeyLoaded(true); // Continue without encryption
       }
     };
 
     initEncryption();
-  }, [threadId, user?.uid]);
+  }, [threadId]);
 
   // Modified message fetching with proper iteration
   useEffect(() => {
     if (!threadId || !isKeyLoaded) return;
 
     const messagesRef = ref(database, `threads/${threadId}/messages`);
-
-    const unsubscribe = onValue(messagesRef, (snapshot) => {
+    const unsubscribe = onValue(messagesRef, async (snapshot) => {
       if (snapshot.exists()) {
         const messagesData = [];
         const messagesObj = snapshot.val();
 
-        // Process all messages first (synchronously)
-        const messagePromises = Object.keys(messagesObj).map(async (key) => {
+        // Process all messages
+        for (const key of Object.keys(messagesObj)) {
           const message = {
             id: key,
             ...messagesObj[key],
           };
 
+          // Handle both encrypted and unencrypted messages
           if (message.encrypted && encryptionKey) {
             try {
               message.content = await decryptMessage(
@@ -222,17 +223,22 @@ const Thread = ({ threadId, userId, threadData }) => {
               message.isDecrypted = true;
             } catch (error) {
               console.error("Decryption failed:", error);
+              // Fallback to original content if decryption fails
               message.isDecrypted = false;
+              message.content = "[Encrypted message]";
             }
+          } else if (message.encrypted && !encryptionKey) {
+            // No key available but message is encrypted
+            message.content = "[Encrypted message - key not available]";
+            message.isDecrypted = false;
           }
-          return message;
-        });
 
-        // Wait for all decryptions to complete
-        Promise.all(messagePromises).then((decryptedMessages) => {
-          decryptedMessages.sort((a, b) => a.timestamp - b.timestamp);
-          setMessages(decryptedMessages);
-        });
+          messagesData.push(message);
+        }
+
+        // Sort by timestamp
+        messagesData.sort((a, b) => a.timestamp - b.timestamp);
+        setMessages(messagesData);
       } else {
         setMessages([]);
       }
@@ -324,21 +330,25 @@ const Thread = ({ threadId, userId, threadData }) => {
     }
 
     try {
-      let encryptedContent = null;
+      let contentToSend = newMessage.trim();
+      let isEncrypted = false;
 
-      if (newMessage.trim() && encryptionKey) {
-        encryptedContent = await encryptMessage(
-          newMessage.trim(),
+      // Encrypt if we have a key
+      if (encryptionKey && contentToSend) {
+        const encryptedContent = await encryptMessage(
+          contentToSend,
           encryptionKey
         );
+        contentToSend = encryptedContent;
+        isEncrypted = true;
       }
 
       const messageData = {
         userId: user.uid,
         userName: user.displayName || "Anonymous",
         userAvatar: user.photoURL || "",
-        content: encryptedContent || newMessage.trim(),
-        encrypted: !!encryptedContent,
+        content: contentToSend,
+        encrypted: isEncrypted,
         files: uploadedFiles,
         timestamp: serverTimestamp(),
       };
@@ -459,7 +469,10 @@ const Thread = ({ threadId, userId, threadData }) => {
     if (snapshot.exists()) {
       return snapshot.val();
     } else {
-      return { userName: "Unknown User", profilePicture: "/default-profile.png" };
+      return {
+        userName: "Unknown User",
+        profilePicture: "/default-profile.png",
+      };
     }
   };
 
@@ -481,7 +494,7 @@ const Thread = ({ threadId, userId, threadData }) => {
     loadUserData();
   }, [messages]);
 
-  console.log("messages", messages)
+  console.log("messages", messages);
   return (
     <div className="flex flex-col h-full bg-[#848DF9] rounded-[8px]">
       {/* Header */}
@@ -501,30 +514,37 @@ const Thread = ({ threadId, userId, threadData }) => {
         {messages.map((message) => {
           const userData = userDataMap[message.userId] || {
             userName: message.userName,
-            profilePicture: message.userAvatar
+            profilePicture: message.userAvatar,
           };
 
-          console.log("userData", userData)
+          console.log("userData", userData);
           return (
             <div
               key={message.id}
-              className={`flex ${message.userId === userId ? "justify-end" : "justify-start"
-                }`}
+              className={`flex ${
+                message.userId === userId ? "justify-end" : "justify-start"
+              }`}
             >
               <div
-                className={`flex max-w-[80%] ${message.userId === userId ? "flex-row-reverse" : "flex-row"
-                  }`}
+                className={`flex max-w-[80%] ${
+                  message.userId === userId ? "flex-row-reverse" : "flex-row"
+                }`}
               >
                 <Avatar
                   src={userData.ProfilePicture} // Use fetched profile pic or fallback
                   name={userData.userName} // Use fetched username or fallback
-                  className={`h-8 w-8 rounded-full flex-shrink-0 ${message.userId === userId ? "ml-2" : "mr-2"}`}
+                  className={`h-8 w-8 rounded-full flex-shrink-0 ${
+                    message.userId === userId ? "ml-2" : "mr-2"
+                  }`}
                 />
 
                 <div>
                   <div
-                    className={`flex items-center ${message.userId === userId ? "justify-end" : "justify-start"
-                      }`}
+                    className={`flex items-center ${
+                      message.userId === userId
+                        ? "justify-end"
+                        : "justify-start"
+                    }`}
                   >
                     <span className="text-xs text-[#333333] mx-2">
                       {formatTimestamp(message.timestamp)}
@@ -535,10 +555,11 @@ const Thread = ({ threadId, userId, threadData }) => {
                   </div>
 
                   <div
-                    className={`mt-1 p-3 rounded-lg ${message.userId === userId
-                      ? "bg-[#5A5FB7] text-white rounded-tr-none"
-                      : "bg-[#5A5FB7] text-white  rounded-tl-none"
-                      }`}
+                    className={`mt-1 p-3 rounded-lg ${
+                      message.userId === userId
+                        ? "bg-[#5A5FB7] text-white rounded-tr-none"
+                        : "bg-[#5A5FB7] text-white  rounded-tl-none"
+                    }`}
                   >
                     {message.content && (
                       <>
@@ -578,26 +599,29 @@ const Thread = ({ threadId, userId, threadData }) => {
                             href={file.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`flex items-center p-2 rounded ${message.userId === userId
-                              ? "bg-[#848DF9] hover:bg-[#848DF9]/70"
-                              : "bg-gray-100 hover:bg-gray-200"
-                              }`}
+                            className={`flex items-center p-2 rounded ${
+                              message.userId === userId
+                                ? "bg-[#848DF9] hover:bg-[#848DF9]/70"
+                                : "bg-gray-100 hover:bg-gray-200"
+                            }`}
                           >
                             {getFileIcon(file.type)}
                             <div className="ml-2 flex-1 truncate">
                               <p
-                                className={`text-xs font-medium ${message.userId === userId
-                                  ? "text-white"
-                                  : "text-gray-700"
-                                  }`}
+                                className={`text-xs font-medium ${
+                                  message.userId === userId
+                                    ? "text-white"
+                                    : "text-gray-700"
+                                }`}
                               >
                                 {file.name}
                               </p>
                               <p
-                                className={`text-xs ${message.userId === userId
-                                  ? "text-blue-200"
-                                  : "text-gray-500"
-                                  }`}
+                                className={`text-xs ${
+                                  message.userId === userId
+                                    ? "text-blue-200"
+                                    : "text-gray-500"
+                                }`}
                               >
                                 {formatFileSize(file.size)}
                               </p>
@@ -610,7 +634,7 @@ const Thread = ({ threadId, userId, threadData }) => {
                 </div>
               </div>
             </div>
-          )
+          );
         })}
         <div ref={messagesEndRef} />
       </div>
@@ -715,10 +739,11 @@ const Thread = ({ threadId, userId, threadData }) => {
           <button
             type="submit"
             disabled={!newMessage.trim() && uploadedFiles.length === 0}
-            className={`p-2 rounded-full ${!newMessage.trim() && uploadedFiles.length === 0
-              ? "text-gray-400 bg-gray-100"
-              : "text-white bg-[#E433F5] hover:bg-[#E433F5]/70"
-              } focus:outline-none`}
+            className={`p-2 rounded-full ${
+              !newMessage.trim() && uploadedFiles.length === 0
+                ? "text-gray-400 bg-gray-100"
+                : "text-white bg-[#E433F5] hover:bg-[#E433F5]/70"
+            } focus:outline-none`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
