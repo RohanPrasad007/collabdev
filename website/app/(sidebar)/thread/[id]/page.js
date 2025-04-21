@@ -46,7 +46,7 @@ function page({ params }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center bg-[#848DF9] w-full rounded-[8px] h-[98vh]">
-        <span class="loader"></span>
+        <span classNames="loader"></span>
       </div>
     );
   }

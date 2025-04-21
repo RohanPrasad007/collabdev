@@ -80,7 +80,6 @@ const Thread = ({ threadId, userId, threadData }) => {
   const [encryptionKey, setEncryptionKey] = useState(null);
   const [isKeyLoaded, setIsKeyLoaded] = useState(false);
   const [userDataMap, setUserDataMap] = useState(null);
-  const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const { user } = useAuth();
@@ -157,6 +156,7 @@ const Thread = ({ threadId, userId, threadData }) => {
 
         // Sort by timestamp
         messagesData.sort((a, b) => a.timestamp - b.timestamp);
+        loadUserData(messagesData);
         setMessages(messagesData);
       } else {
         setMessages([]);
@@ -393,33 +393,20 @@ const Thread = ({ threadId, userId, threadData }) => {
     }
   };
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      setLoading(true);
-      const newUserDataMap = { ...userDataMap };
+  const loadUserData = async (messages) => {
+    const newUserDataMap = { ...userDataMap };
 
-      // Only fetch data for users we don't already have
-      for (const message of messages) {
-        if (!newUserDataMap[message.userId]) {
-          const userData = await getUserData(message.userId);
-          newUserDataMap[message.userId] = userData;
-        }
+    // Only fetch data for users we don't already have
+    for (const message of messages) {
+      if (!newUserDataMap[message.userId]) {
+        const userData = await getUserData(message.userId);
+        newUserDataMap[message.userId] = userData;
       }
+    }
 
-      setUserDataMap(newUserDataMap);
-      setLoading(false);
-    };
+    setUserDataMap(newUserDataMap);
+  };
 
-    loadUserData();
-  }, [messages]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center bg-[#848DF9] w-full rounded-[8px] h-[98vh]">
-        <span className="loader"></span>
-      </div>
-    );
-  }
   return (
     <div className="flex flex-col h-full bg-[#848DF9] rounded-[8px]">
       {/* Header */}
