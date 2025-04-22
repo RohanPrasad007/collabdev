@@ -1,11 +1,11 @@
 "use client"
 import React, { useEffect, useState, useRef } from 'react'
 import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 
 const ActionBar = () => {
     const auth = getAuth()
-    const router = useRouter();
+    const navigate = useNavigate();
     const [user, setUser] = useState(null)
     const [showTooltip, setShowTooltip] = useState(false)
     const tooltipRef = useRef(null)
@@ -15,11 +15,11 @@ const ActionBar = () => {
             if (user) {
                 setUser(user)
             } else {
-                router.push("/sign-in")
+                navigate("/sign-in")
             }
         })
         return () => unsubscribe();
-    }, [auth, router])
+    }, [auth, navigate])
 
     useEffect(() => {
         // Handle clicks outside of the tooltip to close it
@@ -38,7 +38,7 @@ const ActionBar = () => {
     const handleLogout = async () => {
         try {
             await signOut(auth);
-            router.push("/sign-in")
+            navigate("/sign-in")
         } catch (error) {
             console.error("Error signing out:", error.message)
         }
@@ -51,7 +51,7 @@ const ActionBar = () => {
     return (
         <div className="absolute bottom-0 left-3 mx-auto p-2" ref={tooltipRef}>
             <div onClick={toggleTooltip} className="cursor-pointer">
-                <img src='/settings.svg' alt="Settings" />
+                <img src='settings.svg' alt="Settings" />
             </div>
             {showTooltip && (
                 <div

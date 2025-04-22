@@ -48,22 +48,21 @@ export default function SignIn() {
 
     const signInWithGoogleHandler = async () => {
         const provider = new GoogleAuthProvider();
+
         try {
-            // Try popup first
-            try {
-                const result = await signInWithPopup(auth, provider);
-                if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
-                    router.push("/profile-info");
-                } else {
-                    router.push("/");
-                }
-            } catch (popupError) {
-                // If popup fails, fall back to redirect
-                console.log("Popup failed, falling back to redirect...");
-                await signInWithRedirect(auth, provider);
+            // Try popup with additional parameters
+            const result = await signInWithPopup(auth, provider.setCustomParameters({
+                prompt: 'select_account'
+            }));
+
+            if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
+                navigate("/profile-info");
+            } else {
+                navigate("/");
             }
-        } catch (error) {
-            console.error("Error signing in with Google:", error);
+        } catch (popupError) {
+            console.log("Popup failed, falling back to redirect...", popupError);
+            await signInWithRedirect(auth, provider);
         }
     };
 
