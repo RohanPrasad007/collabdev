@@ -580,6 +580,7 @@ export default function EchoPage({ params }) {
         set(ref(database, `echoes/${echoId}/answer`), null),
         set(ref(database, `echoes/${echoId}/offerCandidates`), null),
         set(ref(database, `echoes/${echoId}/answerCandidates`), null),
+        set(ref(database, `echoes/${echoId}/participants`), null),
       ]);
     } catch (error) {
       console.error("Error cleaning up WebRTC data:", error);
