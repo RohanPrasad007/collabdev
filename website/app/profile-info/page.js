@@ -1,12 +1,15 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { auth, database } from "../../config";
-import { onAuthStateChanged, updateProfile } from "firebase/auth";
-import { ref, set, get } from "firebase/database";
+import { updateProfile } from "firebase/auth";
+import { ref, set } from "firebase/database";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Make sure this is imported
+import { useUserProfile } from "../../context/UserProfileContext"; // Adjust path as needed
 
 const ProfileInfo = () => {
+    const { userProfile, setUserProfile, isLoading: contextLoading } = useUserProfile();
     const [preview, setPreview] = useState(null);
     const [imageError, setImageError] = useState(false);
     const [email, setEmail] = useState("");
@@ -15,7 +18,6 @@ const ProfileInfo = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [hasCustomImage, setHasCustomImage] = useState(false);
     const router = useRouter();
-    const [isVisible, setIsVisible] = useState(false);
 
     const generateUsername = (email) => {
         if (!email) return "";
@@ -26,32 +28,19 @@ const ProfileInfo = () => {
     };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                if (user.email) {
-                    setEmail(user.email);
-                    setUserId(generateUsername(user.email));
-                }
-
-                // Check if user has existing profile data
-                const userRef = ref(database, `users/${user.uid}`);
-                const snapshot = await get(userRef);
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    setEmail(userData.Email || user.email);
-                    setUserId(userData.userName || generateUsername(user.email));
-                    setGithubId(userData.GitHubID || "");
-                    setPreview(userData.ProfilePicture || null);
-                    setHasCustomImage(!!userData.ProfilePicture);
-                } else if (user.photoURL && !hasCustomImage) {
-                    // Only set Google profile picture for new users
-                    setPreview(user.photoURL);
-                }
-            }
+        if (!contextLoading && userProfile) {
+            // Populate form with context data
+            setEmail(userProfile.email || "");
+            setUserId(userProfile.userName || generateUsername(userProfile.email));
+            setGithubId(userProfile.githubId || "");
+            setPreview(userProfile.profilePicture || null);
+            setHasCustomImage(!!userProfile.profilePicture);
             setIsLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
+        } else if (!contextLoading && !userProfile) {
+            // User not authenticated, redirect to login
+            router.push("/sign-in"); // Adjust as needed
+        }
+    }, [userProfile, contextLoading, router]);
 
     const handleInputChange = (setter) => (e) => setter(e.target.value);
 
@@ -106,6 +95,15 @@ const ProfileInfo = () => {
             const userRef = ref(database, `users/${user.uid}`);
             await set(userRef, userData);
 
+            // Also update the context data
+            setUserProfile({
+                uid: user.uid,
+                userName: userId,
+                email: email,
+                githubId: githubId,
+                profilePicture: preview
+            });
+
             // Use a generic photoURL for Authentication to avoid size limitations
             try {
                 await updateProfile(user, {
@@ -116,22 +114,32 @@ const ProfileInfo = () => {
                 // Continue execution since the main functionality (database update) succeeded
             }
 
-            // Show toast and wait for it to complete
-            await new Promise((resolve) => {
-                toast.success("Profile saved successfully!", {
-                    onClose: () => resolve()
-                });
+            // Show success toast
+            toast.success("Profile saved successfully!", {
+                autoClose: 2000, // Close after 2 seconds
+                onClose: () => {
+                    // Only redirect after the toast is closed
+                    setTimeout(() => {
+                        router.push("/");
+                    }, 500);
+                }
             });
 
-            // Redirect after toast is closed
-            router.push("/");
         } catch (error) {
             console.error("Error saving profile data:", error);
-            toast("An error occurred while saving the profile. Please try again.");
-        } finally {
+            toast.error("An error occurred while saving the profile. Please try again.");
             setIsLoading(false);
         }
     };
+
+    // Show a loading state while context data is loading
+    if (contextLoading || (isLoading && !userProfile)) {
+        return (
+            <div className="h-screen bg-[#020222] flex justify-center items-center">
+                <div className="text-white">Loading...</div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -209,7 +217,7 @@ const ProfileInfo = () => {
                             </div>
                             <div className="w-full flex justify-center my-2">
                                 <div
-                                    className="bg-[#020222] w-[225px] h-[46px] rounded-[12px] flex justify-center items-center border-2 border-[#C0C3E3]"
+                                    className="bg-[#020222] w-[225px] h-[46px] rounded-[12px] flex justify-center items-center border-2 border-[#C0C3E3] cursor-pointer"
                                     onClick={handleSubmit}
                                 >
                                     <button className="text-[#848DF9]" disabled={isLoading}>
@@ -221,7 +229,7 @@ const ProfileInfo = () => {
                     </div>
                 </div>
             </div>
-            <ToastContainer />
+            <ToastContainer position="top-center" />
         </>
     );
 };

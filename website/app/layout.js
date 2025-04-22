@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { DialogsProvider } from "@/context/DialogsContext";
 import { MatrixProvider } from "@/context/matrixContext";
 import { ThreadProvider } from "@/context/ThreadContext";
+import { UserProfileProvider } from "@/context/UserProfileContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,15 +29,17 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <MatrixProvider>
-          <ThreadProvider>
-            <DialogsProvider>
-              <AuthProvider>
-                {children}
-              </AuthProvider>
-            </DialogsProvider>
-          </ThreadProvider>
-        </MatrixProvider>
+        <UserProfileProvider>
+          <MatrixProvider>
+            <ThreadProvider>
+              <DialogsProvider>
+                <AuthProvider>
+                  {children}
+                </AuthProvider>
+              </DialogsProvider>
+            </ThreadProvider>
+          </MatrixProvider>
+        </UserProfileProvider>
       </body>
     </html>
   );

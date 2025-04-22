@@ -1,48 +1,78 @@
 "use client"
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { getMatrixById } from '../services/databaseService';
+import { getMatrixById, getUserMatrices, getUserThreads } from '../services/databaseService';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../config';
+import { useUserProfile } from './UserProfileContext';
 
 const MatrixContext = createContext();
 
 export const MatrixProvider = ({ children }) => {
+  const { userProfile } = useUserProfile();
   const [currentMatrixId, setCurrentMatrixId] = useState(null);
   const [currentMatrix, setCurrentMatrix] = useState(null);
   const [matrices, setMatrices] = useState([]);
+  const [threads, setThreads] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Load all matrices in real-time
+  // Load matrices and threads for the current user
   useEffect(() => {
-    const matricesRef = ref(database, 'matrices');
-    const unsubscribe = onValue(matricesRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const matricesData = snapshot.val();
-        const matricesArray = Object.entries(matricesData).map(([id, data]) => ({
-          id,
-          ...data
-        }));
-        setMatrices(matricesArray);
+    if (!userProfile || !userProfile?.uid) {
+      setMatrices([]);
+      setThreads([]);
+      setIsLoading(false);
+      return;
+    }
 
-        // If no current matrix is set, try to determine one
-        if (!currentMatrixId && matricesArray.length > 0) {
-          determineCurrentMatrix(matricesArray);
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Get matrices for this user
+        const userMatrices = await getUserMatrices(userProfile?.uid);
+        setMatrices(userMatrices);
+
+        // Get threads for this user's matrices
+        const userThreads = await getUserThreads(userProfile?.uid);
+        setThreads(userThreads);
+
+        // If no current matrix is set, determine one
+        if (!currentMatrixId && userMatrices.length > 0) {
+          determineCurrentMatrix(userMatrices);
+        } else if (currentMatrixId && !userMatrices.some(m => m.id === currentMatrixId)) {
+          // If current matrix is no longer accessible, reset it
+          setCurrentMatrixId(userMatrices.length > 0 ? userMatrices[0].id : null);
         }
-      } else {
-        setMatrices([]);
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Error loading matrices:", error);
-      setIsLoading(false);
+    };
+
+    fetchUserData();
+
+    // Set up real-time listeners for updates
+    const matricesRef = ref(database, 'matrices');
+    const matricesUnsubscribe = onValue(matricesRef, () => {
+      fetchUserData(); // Re-fetch when matrices change
     });
 
-    return () => unsubscribe();
-  }, []);
+    const threadsRef = ref(database, 'threads');
+    const threadsUnsubscribe = onValue(threadsRef, () => {
+      fetchUserData(); // Re-fetch when threads change
+    });
+
+    return () => {
+      matricesUnsubscribe();
+      threadsUnsubscribe();
+    };
+  }, [userProfile]);
 
   // Determine current matrix from URL or select first available
   const determineCurrentMatrix = (matricesArray) => {
@@ -63,31 +93,74 @@ export const MatrixProvider = ({ children }) => {
       if (matrixIdParam) matrixIdFromUrl = matrixIdParam;
     }
 
-    // If we found an ID in the URL, use it if it exists in our matrices
+    // If we found an ID in the URL, verify the user has access to it
     if (matrixIdFromUrl && matricesArray.some(m => m.id === matrixIdFromUrl)) {
       setCurrentMatrixId(matrixIdFromUrl);
     }
-    // Otherwise use the first available matrix if we have matrices
+    // Otherwise use the first available matrix
     else if (matricesArray.length > 0) {
       setCurrentMatrixId(matricesArray[0].id);
     }
   };
 
-  // Load current matrix data when ID changes
   useEffect(() => {
     const loadMatrix = async () => {
-      if (currentMatrixId) {
+      if (currentMatrixId && userProfile) {
         try {
           const matrix = await getMatrixById(currentMatrixId);
-          setCurrentMatrix(matrix);
 
-          // Check if we're on the track page
-          if (pathname && pathname.includes('/track')) {
-            // If matrix has track, navigate to it
-            if (matrix && matrix.track) {
-              router.push(`/track/${matrix.track}`);
-            } else {
-              // If no track, go to /
+          // Check if user has access according to the actual database structure
+          let hasAccess = false;
+
+          // Creator check
+          if (matrix.createdBy === userProfile.uid) {
+            hasAccess = true;
+          }
+          // Direct permission check
+          else if (matrix.permissions && userProfile.uid in matrix.permissions) {
+            hasAccess = true;
+          }
+          // Check if user exists in the users array at matrix level
+          else if (
+            matrix.users &&
+            Array.isArray(matrix.users) &&
+            matrix.users.includes(userProfile.uid)
+          ) {
+            hasAccess = true;
+          }
+          // Check if user has numeric index in users array (as seen in screenshot)
+          else if (
+            matrix.users &&
+            typeof matrix.users === 'object'
+          ) {
+            // Check all values in the users object for this userId
+            for (const value of Object.values(matrix.users)) {
+              if (value === userProfile.uid) {
+                hasAccess = true;
+                break;
+              }
+            }
+          }
+
+          if (matrix && hasAccess) {
+            setCurrentMatrix(matrix);
+
+            // Check if we're on the track page
+            if (pathname && pathname.includes('/track')) {
+              // If matrix has track, navigate to it
+              if (matrix && matrix.track) {
+                router.push(`/track/${matrix.track}`);
+              } else {
+                // If no track, go to /
+                router.push('/');
+              }
+            }
+          } else {
+            console.error("User does not have access to this matrix");
+            setCurrentMatrix(null);
+
+            // Redirect to home if user doesn't have access
+            if (pathname && (pathname.includes('/matrix/') || pathname.includes('/join/'))) {
               router.push('/');
             }
           }
@@ -100,14 +173,17 @@ export const MatrixProvider = ({ children }) => {
       }
     };
 
-    loadMatrix();
-  }, [currentMatrixId, router, pathname]);
+    if (userProfile) {
+      loadMatrix();
+    }
+  }, [currentMatrixId, userProfile, router, pathname]);
 
   return (
     <MatrixContext.Provider value={{
       currentMatrixId,
       currentMatrix,
       matrices,
+      threads,
       isLoading,
       setCurrentMatrixId
     }}>

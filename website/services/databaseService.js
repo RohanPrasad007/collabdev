@@ -274,16 +274,125 @@ export const updateMatrixTrack = async (matrixId, trackId) => {
 
 // Add these functions to your databaseService.js file
 
-// Get all matrices
+export const getUserMatrices = async (userId) => {
+  if (!userId) {
+    console.error('No user ID provided for getUserMatrices');
+    return [];
+  }
+
+  try {
+    const matricesRef = ref(database, 'matrices');
+    const snapshot = await get(matricesRef);
+
+    if (snapshot.exists()) {
+      const matricesObject = snapshot.val();
+      const allMatrices = [];
+
+      // Process each matrix
+      for (const [matrixId, matrixData] of Object.entries(matricesObject)) {
+        let hasAccess = false;
+
+        // Check if the user is the creator (if createdBy field exists)
+        if (matrixData.createdBy === userId) {
+          hasAccess = true;
+        }
+        // Check if the user has permissions directly under the permissions object
+        else if (matrixData.permissions && userId in matrixData.permissions) {
+          hasAccess = true;
+        }
+        // Check if user exists in the users array at matrix level
+        else if (
+          matrixData.users &&
+          Array.isArray(matrixData.users) &&
+          matrixData.users.includes(userId)
+        ) {
+          hasAccess = true;
+        }
+        // Check if user has numeric index in users array (as seen in screenshot)
+        else if (
+          matrixData.users &&
+          typeof matrixData.users === 'object'
+        ) {
+          // Check all values in the users object for this userId
+          for (const value of Object.values(matrixData.users)) {
+            if (value === userId) {
+              hasAccess = true;
+              break;
+            }
+          }
+        }
+
+        if (hasAccess) {
+          allMatrices.push({
+            id: matrixId,
+            ...matrixData
+          });
+        }
+      }
+
+      return allMatrices;
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error getting user matrices:', error);
+    throw error;
+  }
+};
+
+// Get threads for specific user's matrices
+export const getUserThreads = async (userId) => {
+  if (!userId) {
+    console.error('No user ID provided for getUserThreads');
+    return [];
+  }
+
+  try {
+    // First get the user's matrices
+    const userMatrices = await getUserMatrices(userId);
+    const matrixIds = userMatrices.map(matrix => matrix.id);
+
+    // If user has no matrices, return empty array
+    if (matrixIds.length === 0) {
+      return [];
+    }
+
+    // Get all threads
+    const threadsRef = ref(database, 'threads');
+    const snapshot = await get(threadsRef);
+
+    if (snapshot.exists()) {
+      const threadsObject = snapshot.val();
+      const allThreads = Object.entries(threadsObject).map(([id, data]) => ({
+        thread_id: id,
+        ...data
+      }));
+
+      // Filter threads that belong to user's matrices
+      return allThreads.filter(thread =>
+        matrixIds.includes(thread.matrix_id)
+      );
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error getting user threads:', error);
+    throw error;
+  }
+};
+
+// Keep original functions for other parts of the app that might need them
 export const getAllMatrices = async () => {
   try {
     const matricesRef = ref(database, 'matrices');
     const snapshot = await get(matricesRef);
 
     if (snapshot.exists()) {
-      // Convert the object of matrices to an array
       const matricesObject = snapshot.val();
-      return Object.keys(matricesObject).map(key => matricesObject[key]);
+      return Object.entries(matricesObject).map(([id, data]) => ({
+        id,
+        ...data
+      }));
     }
 
     return [];
@@ -293,14 +402,12 @@ export const getAllMatrices = async () => {
   }
 };
 
-// Get all threads
 export const getAllThreads = async () => {
   try {
     const threadsRef = ref(database, 'threads');
     const snapshot = await get(threadsRef);
 
     if (snapshot.exists()) {
-      // Convert the object of threads to an array
       const threadsObject = snapshot.val();
       return Object.keys(threadsObject).map(key => ({
         thread_id: key,
