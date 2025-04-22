@@ -4,6 +4,7 @@ import SignIn from './components/SignIn';
 import Home from './components/Home';
 import { useAuth } from './context/AuthContext';
 import ProfileInfo from './components/ProfileInfo';
+import Dashboard from './components/Dashboard';
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/profile-info" element={<ProfileInfo />} />
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to="/signin" replace />} />
         </Routes>
       </Router>

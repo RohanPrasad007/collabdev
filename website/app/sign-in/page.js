@@ -3,36 +3,78 @@ import Image from "next/image";
 import app from "@/config";
 import { getAuth } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "firebase/auth";
 import { useEffect, useState } from "react";
 
 export default function SignIn() {
-    const [user, setUser] = useState(null)
-    const router = useRouter()
+    const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
+    const auth = getAuth(app);
 
     useEffect(() => {
-        const auth = getAuth(app);
+        // Check for redirect result when component mounts
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result?.user) {
+                    // Handle redirect sign-in result
+                    if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
+                        router.push("/profile-info");
+                    } else {
+                        router.push("/");
+                    }
+                }
+            })
+            .catch((error) => {
+                console.error("Error getting redirect result:", error);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+
+        // Listen for auth state changes
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
                 setUser(user);
+                // If user is already signed in, redirect to home
+                router.push("/");
             } else {
-                setUser(null)
+                setUser(null);
             }
-        })
+        });
 
         return () => unsubscribe();
-    }, [])
+    }, []);
 
-    const signInWithGoogle = async () => {
-        const auth = getAuth(app);
+    const signInWithGoogleHandler = async () => {
         const provider = new GoogleAuthProvider();
         try {
-            await signInWithPopup(auth, provider)
-            router.push("/profile-info")
+            // Try popup first
+            try {
+                const result = await signInWithPopup(auth, provider);
+                if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
+                    router.push("/profile-info");
+                } else {
+                    router.push("/");
+                }
+            } catch (popupError) {
+                // If popup fails, fall back to redirect
+                console.log("Popup failed, falling back to redirect...");
+                await signInWithRedirect(auth, provider);
+            }
         } catch (error) {
-            console.error("Error signing in with  Google", error.message)
+            console.error("Error signing in with Google:", error);
         }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="h-screen bg-[#020222] flex justify-center items-center">
+                <p className="text-[#E2E2FE]">Loading...</p>
+            </div>
+        );
     }
+
     return (
         <div className="h-screen bg-[#020222] flex justify-center items-center relative">
             <div className="bg-[#E2E2FE] w-[756px] h-[422px] opacity-[25%] rounded-[8px]" />
@@ -47,9 +89,12 @@ export default function SignIn() {
                         <img src="/Logo.svg" alt="Logo" />
                     </div>
                     <p className="font-bold text-[#E2E2FE] text-[28px] mb-8 font-[ZenDots]">CollabDev</p>
-                    <button className="w-[301px] h-[58px] bg-[#020222] rounded-[30px] border-[#E2E2FE] border-2 flex gap-3 p-2 items-center justify-center drop-shadow-xl" onClick={signInWithGoogle}>
+                    <button
+                        className="w-[301px] h-[58px] bg-[#020222] rounded-[30px] border-[#E2E2FE] border-2 flex gap-3 p-2 items-center justify-center drop-shadow-xl"
+                        onClick={signInWithGoogleHandler}
+                    >
                         <img src="/google.svg" alt="google" />
-                        <p className="font-bold text-[#E2E2FE] text-[18px] " >Continue with Google</p>
+                        <p className="font-bold text-[#E2E2FE] text-[18px]">Continue with Google</p>
                     </button>
                 </div>
             </div>

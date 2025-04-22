@@ -3,20 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 const SignIn = () => {
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, checkIfUserExists } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
 
   const handleGoogleSignIn = async () => {
     try {
       setError('');
-      await signInWithGoogle();
-      navigate('/profile-info');
+      const result = await signInWithGoogle();
+      const userExists = await checkIfUserExists(result.user.uid);
+
+      if (userExists) {
+        navigate('/home');
+      } else {
+        navigate('/profile-info');
+      }
     } catch (error) {
       setError('Failed to sign in with Google');
       console.error(error);
     }
   };
+
 
   return (
     <div className="h-screen bg-[#020222] flex justify-center items-center relative">
