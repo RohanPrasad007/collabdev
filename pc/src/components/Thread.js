@@ -9,14 +9,14 @@ import {
   getDatabase,
   set,
 } from "firebase/database";
-import { database, storage } from "@/config";
+import { database, storage } from "../firebase";
 import {
   ref as storageRef,
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
 import Avatar from "./Avatar";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 // Encryption Utilities
 const generateKey = async () => {

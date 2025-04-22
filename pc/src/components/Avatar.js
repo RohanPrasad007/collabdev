@@ -1,6 +1,5 @@
 // Avatar.js - Reusable Avatar component
 import { useState, useEffect } from "react";
-import Image from "next/image";
 
 const Avatar = ({ src, name, className = "", size = "md" }) => {
   const [error, setError] = useState(false);
@@ -55,7 +54,7 @@ const Avatar = ({ src, name, className = "", size = "md" }) => {
   if (src && !error) {
     return (
       <div className={`relative overflow-hidden ${className}`}>
-        <Image
+        <img
           src={src}
           alt={name || "User avatar"}
           layout="fill"

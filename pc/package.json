@@ -5,6 +5,7 @@
   "dependencies": {
     "@electron/remote": "^2.1.2",
     "@fontsource/poppins": "^5.2.5",
+    "@hello-pangea/dnd": "^18.0.1",
     "concurrently": "^9.1.2",
     "cra-template": "1.2.0",
     "cross-env": "^7.0.3",
