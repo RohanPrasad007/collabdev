@@ -78,7 +78,16 @@ export default function EchoPage({ params }) {
         setupParticipantListener(slug);
       } catch (error) {
         console.error("Call initialization failed:", error);
-        setError(error.message);
+
+        // Cleanup any created data
+        await cleanupWebRTCData(slug);
+
+        setError({
+          message: error.message,
+          retry: () => {
+            window.location.reload(); // Simple page reload
+          },
+        });
       } finally {
         setLoading(false);
       }
@@ -564,6 +573,19 @@ export default function EchoPage({ params }) {
     router.push("/");
   };
 
+  const cleanupWebRTCData = async (echoId) => {
+    try {
+      await Promise.all([
+        set(ref(database, `echoes/${echoId}/offer`), null),
+        set(ref(database, `echoes/${echoId}/answer`), null),
+        set(ref(database, `echoes/${echoId}/offerCandidates`), null),
+        set(ref(database, `echoes/${echoId}/answerCandidates`), null),
+      ]);
+    } catch (error) {
+      console.error("Error cleaning up WebRTC data:", error);
+    }
+  };
+
   // Render loading/error states
   if (loading) {
     return (
@@ -578,15 +600,22 @@ export default function EchoPage({ params }) {
         <div className="flex justify-center text-center flex-col items-center">
           <img
             src="/error.png"
-            className="w-[300px]  h-[300px]  rounded-3xl mt-44"
+            className="w-[300px] h-[300px] rounded-3xl mt-44"
           />
           <p className="text-white text-[24px] font-bold whitespace-normal break-words max-w-lg mx-auto mt-4 text-center">
-            {error}
+            {error.message}
           </p>
+          <button
+            onClick={error.retry}
+            className="mt-6 px-6 py-3 bg-[#E433F5] text-white rounded-full hover:bg-[#E433F5]/80 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
   }
+
   if (!echoData) {
     return (
       <div className="w-full bg-[#848DF9] rounded-[8px] px-7 py-3 h-[98vh] relative overflow-hidden flex justify-center items-center">
