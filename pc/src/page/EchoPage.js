@@ -19,7 +19,28 @@ const servers = {
     {
       urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
     },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
   ],
+
   iceCandidatePoolSize: 10,
 };
 
