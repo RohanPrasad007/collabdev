@@ -69,7 +69,7 @@ const App = () => {
                         <Route path="/home" element={<Home />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/echo/:echoId" element={<EchoPage />} />
-                        <Route path="/matrix/:slug" element={<MatrixPage />} />
+                        <Route path="/matrix/:id" element={<MatrixPage />} />
                         <Route path="/thread/:id" element={<ThreadPage />} />
                         <Route path="/track/:id" element={<TrackPage />} />
                       </Route>

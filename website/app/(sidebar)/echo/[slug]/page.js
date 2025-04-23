@@ -476,13 +476,25 @@ export default function EchoPage({ params }) {
   const toggleScreenShare = async () => {
     if (!isScreenSharing) {
       try {
-        // Get screen stream
-        screenStream.current = await navigator.mediaDevices.getDisplayMedia({
+        const sources = await window.electron.desktopCapturer.getSources({
+          types: ["screen", "window"],
+        });
+
+        // Use first available source (or implement your own selection logic)
+        const source = sources[0];
+
+        screenStream.current = await navigator.mediaDevices.getUserMedia({
+          audio: false,
           video: {
-            displaySurface: "monitor", // or "window", "browser"
-            frameRate: { ideal: 30 },
+            mandatory: {
+              chromeMediaSource: "desktop",
+              chromeMediaSourceId: source.id,
+              minWidth: 1280,
+              maxWidth: 1920,
+              minHeight: 720,
+              maxHeight: 1080,
+            },
           },
-          audio: false, // Set to true if you want to share audio
         });
 
         // Get the video track from screen stream
@@ -637,9 +649,6 @@ export default function EchoPage({ params }) {
             {/* Display the echo name from the fetched data */}
             {echoData.name || `Voice-ch-${slug}`}
           </p>
-        </div>
-        <div>
-          <img src="/messager.svg" className="w-[30.63px] h-[30.63px]" />
         </div>
       </div>
 

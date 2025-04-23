@@ -475,59 +475,75 @@ const EchoPage = () => {
   const toggleScreenShare = async () => {
     if (!isScreenSharing) {
       try {
-        // Get screen stream
-        screenStream.current = await navigator.mediaDevices.getDisplayMedia({
+        const sources = await window.electronAPI.getScreenSources();
+        if (!sources || sources.length === 0) {
+          throw new Error("No screen sources available");
+        }
+
+        const source = await window.electronAPI.showScreenPicker(sources);
+        if (!source) {
+          throw new Error("User canceled screen selection");
+        }
+
+        const constraints = {
+          audio: false,
           video: {
-            displaySurface: "monitor", // or "window", "browser"
-            frameRate: { ideal: 30 },
+            mandatory: {
+              chromeMediaSource: "desktop",
+              chromeMediaSourceId: source.id,
+              minWidth: 1280,
+              maxWidth: 1920,
+              minHeight: 720,
+              maxHeight: 1080,
+              minFrameRate: 30,
+            },
           },
-          audio: false, // Set to true if you want to share audio
-        });
+        };
 
-        // Get the video track from screen stream
+        screenStream.current = await navigator.mediaDevices.getUserMedia(
+          constraints
+        );
+
+        // Handle track replacement
         const screenTrack = screenStream.current.getVideoTracks()[0];
+        if (!screenTrack) throw new Error("No video track in screen stream");
 
-        // Store the original video track if not already stored
         const videoSender = peerConnection.current
           .getSenders()
           .find((sender) => sender.track?.kind === "video");
 
-        if (videoSender && !originalVideoTrack.current) {
-          originalVideoTrack.current = videoSender.track;
-        }
-
-        // Replace the track in the peer connection
         if (videoSender) {
+          if (!originalVideoTrack.current) {
+            originalVideoTrack.current = videoSender.track;
+          }
           await videoSender.replaceTrack(screenTrack);
         }
 
-        // Update local display to show screen share
+        // Update local stream
         if (localStream.current) {
-          // Create new stream with screen track
-          const newLocalStream = new MediaStream();
-          localStream.current.getAudioTracks().forEach((track) => {
-            newLocalStream.addTrack(track);
-          });
-          newLocalStream.addTrack(screenTrack);
+          const newLocalStream = new MediaStream([
+            ...localStream.current.getAudioTracks(),
+            screenTrack,
+          ]);
           localStream.current = newLocalStream;
         }
 
-        // Handle when user stops sharing via browser UI
+        // Handle when sharing stops
         screenTrack.onended = () => {
           stopScreenSharing();
         };
 
         setIsScreenSharing(true);
-        console.log("Screen sharing started");
+        console.log("Screen sharing started successfully");
       } catch (error) {
-        console.error("Error starting screen share:", error);
+        console.error("Screen sharing failed:", error);
         setIsScreenSharing(false);
+        // Show error to user if needed
       }
     } else {
       stopScreenSharing();
     }
   };
-
   // Stop screen sharing
   const stopScreenSharing = async () => {
     if (!screenStream.current) return;
@@ -641,13 +657,6 @@ const EchoPage = () => {
           <p className="text-[#000000] text-[24px] font-medium">
             {echoData.name || `Voice-ch-${echoId}`}
           </p>
-        </div>
-        <div>
-          <img
-            src="/messager.svg"
-            className="w-[30.63px] h-[30.63px]"
-            alt="Messager Icon"
-          />
         </div>
       </div>
 
