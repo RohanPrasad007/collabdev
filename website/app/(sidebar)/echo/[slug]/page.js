@@ -41,6 +41,7 @@ export default function EchoPage({ params }) {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const echoId = slug;
 
   // WebRTC refs
   const localStream = useRef(null);
