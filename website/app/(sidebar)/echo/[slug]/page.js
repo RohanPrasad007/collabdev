@@ -23,7 +23,28 @@ const servers = {
     {
       urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
     },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
   ],
+
   iceCandidatePoolSize: 10,
 };
 
@@ -477,25 +498,13 @@ export default function EchoPage({ params }) {
   const toggleScreenShare = async () => {
     if (!isScreenSharing) {
       try {
-        const sources = await window.electron.desktopCapturer.getSources({
-          types: ["screen", "window"],
-        });
-
-        // Use first available source (or implement your own selection logic)
-        const source = sources[0];
-
-        screenStream.current = await navigator.mediaDevices.getUserMedia({
-          audio: false,
+        // Get screen stream
+        screenStream.current = await navigator.mediaDevices.getDisplayMedia({
           video: {
-            mandatory: {
-              chromeMediaSource: "desktop",
-              chromeMediaSourceId: source.id,
-              minWidth: 1280,
-              maxWidth: 1920,
-              minHeight: 720,
-              maxHeight: 1080,
-            },
+            displaySurface: "monitor", // or "window", "browser"
+            frameRate: { ideal: 30 },
           },
+          audio: false, // Set to true if you want to share audio
         });
 
         // Get the video track from screen stream
