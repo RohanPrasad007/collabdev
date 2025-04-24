@@ -444,8 +444,8 @@ const Thread = ({ threadId, userId, threadData }) => {
                 }`}
               >
                 <Avatar
-                  src={userData.ProfilePicture} // Use fetched profile pic or fallback
-                  name={userData.userName} // Use fetched username or fallback
+                  src={userData?.ProfilePicture} // Use fetched profile pic or fallback
+                  name={userData?.userName} // Use fetched username or fallback
                   className={`h-8 w-8 rounded-full flex-shrink-0 ${
                     message.userId === userId ? "ml-2" : "mr-2"
                   }`}
@@ -463,7 +463,7 @@ const Thread = ({ threadId, userId, threadData }) => {
                       {formatTimestamp(message.timestamp)}
                     </span>
                     <span className="font-medium text-md text-[#000000]">
-                      {userData.userName}
+                      {userData?.userName}
                     </span>
                   </div>
 

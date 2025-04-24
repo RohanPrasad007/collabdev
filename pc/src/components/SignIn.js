@@ -1,29 +1,58 @@
-import { useAuth } from '../context/AuthContext';
+import app from "../firebase";
+import { getAuth } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { signInWithPopup, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "firebase/auth";
+import { useEffect, useState } from "react";
 
-const SignIn = () => {
-  const { signInWithGoogle, checkIfUserExists } = useAuth();
+export default function SignIn() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const auth = getAuth(app);
 
-  const handleGoogleSignIn = async () => {
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // Replace with your actual user check (Firestore, etc.)
+        const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
+        navigate(isNewUser ? '/profile-info' : '/home');
+      }
+    });
+    setIsLoading(false)
+    return () => unsubscribe();
+
+  }, []);
+
+
+  const signInWithGoogleHandler = async () => {
+    const provider = new GoogleAuthProvider();
     try {
-      setError('');
-      const result = await signInWithGoogle();
-      const userExists = await checkIfUserExists(result.user.uid);
-
-      if (userExists) {
-        navigate('/home');
-      } else {
-        navigate('/profile-info');
+      // Try popup first
+      try {
+        const result = await signInWithPopup(auth, provider);
+        if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
+          navigate("/profile-info");
+        } else {
+          navigate("/");
+        }
+      } catch (popupError) {
+        // If popup fails, fall back to redirect
+        console.log("Popup failed, falling back to redirect...");
+        await signInWithRedirect(auth, provider);
       }
     } catch (error) {
-      setError('Failed to sign in with Google');
-      console.error(error);
+      console.error("Error signing in with Google:", error);
     }
   };
 
+
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-[#020222] flex justify-center items-center">
+        <p className="text-[#E2E2FE]">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen bg-[#020222] flex justify-center items-center relative">
@@ -38,15 +67,16 @@ const SignIn = () => {
           <div className="mb-8">
             <img src="/Logo.svg" alt="Logo" />
           </div>
-          <p className="font-bold text-[#E2E2FE] text-[28px] mb-8">CollabDev</p>
-          <button className="w-[301px] h-[58px] bg-[#020222] rounded-[30px] border-[#E2E2FE] border-2 flex gap-3 p-2 items-center justify-center drop-shadow-xl" onClick={handleGoogleSignIn}>
+          <p className="font-bold text-[#E2E2FE] text-[28px] mb-8 font-[ZenDots]">CollabDev</p>
+          <button
+            className="w-[301px] h-[58px] bg-[#020222] rounded-[30px] border-[#E2E2FE] border-2 flex gap-3 p-2 items-center justify-center drop-shadow-xl"
+            onClick={signInWithGoogleHandler}
+          >
             <img src="/google.svg" alt="google" />
-            <p className="font-bold text-[#E2E2FE] text-[18px] " >Continue with Google</p>
+            <p className="font-bold text-[#E2E2FE] text-[18px]">Continue with Google</p>
           </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default SignIn;
+}

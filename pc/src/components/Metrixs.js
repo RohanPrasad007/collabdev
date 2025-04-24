@@ -1,35 +1,115 @@
-import React from 'react'
+"use client"
+import { useDialogs } from '../context/DialogsContext';
+import { useAuth } from '../context/AuthContext';
+import { useMatrix } from '../context/matrixContext';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Metrixs = () => {
+    const { toggleMetrixDialog } = useDialogs();
+    const { user } = useAuth();
+    const {
+        currentMatrixId,
+        setCurrentMatrixId,
+        matrices,
+        isLoading
+    } = useMatrix();
+    const navigate = useNavigate();
+
+    // Filter matrices to only show those the user has access to
+    const userMatrices = matrices.filter(matrix =>
+        matrix.users && matrix.users.includes(user?.uid)
+    );
+
+    const handleMatrixClick = (matrixId) => {
+        setCurrentMatrixId(matrixId);
+
+        // Find the matrix data
+        const selectedMatrix = userMatrices.find(matrix => matrix.id === matrixId);
+
+        // Handle navigation based on current page and matrix data
+        if (window.location.pathname.includes('/track')) {
+            if (selectedMatrix && selectedMatrix.track) {
+                navigate(`/matrix/${matrixId}`);
+            } else {
+                navigate(`/matrix/${matrixId}`);
+            }
+        } else {
+            navigate(`/matrix/${matrixId}`);
+        }
+    };
+
+    const activeIndex = userMatrices.findIndex(matrix => matrix.id === currentMatrixId);
+    const topOffset = 7.5 * 16 + (activeIndex !== -1 ? activeIndex * 80 : 0);
+
     return (
         <div className='w-[40%] border-[#020222] border-r-2 relative'>
-            <div className=' h-[70px] mx-4 my-4 flex flex-col  justify-center '>
+            {/* Your existing JSX remains the same, just replace matrices with userMatrices */}
+            <div className='h-[70px] mx-4 my-4 flex flex-col justify-center'>
                 <div className='bg-[#020222] w-[57.92px] h-[57.92px] rounded-full flex justify-center items-center mx-auto'>
                     <img src="/Logo.svg" alt="Logo" />
                 </div>
                 <div className='border-[#020222] border-b-2 w-[50px] h-[2px] mt-3 mx-auto'></div>
             </div>
-            <div className='my-8 flex flex-col gap-5'>
-                <div className='bg-[#020222] w-[59px] h-[59px] rounded-full flex justify-center items-center mx-auto relative'>
-                    <p className='text-[#FFFFFF] text-[12px] '>DnD</p>
-                    <div className='w-[12px] h-[12px] bg-[#008F32] rounded-full absolute top-[1px] right-[4px]'></div>
-                    <div className='w-[12px] h-[12px] bg-[#E33629] rounded-full absolute bottom-[3px] left-[5px]'></div>
-                </div>
-                <div className='bg-[#020222] w-[59px] h-[59px] rounded-full flex justify-center items-center mx-auto'>
-                    <p className='text-[#FFFFFF] text-[12px] '>RP</p>
-                </div>
-                <div className='bg-[#020222] w-[59px] h-[59px] rounded-full flex justify-center items-center mx-auto'>
-                    <p className='text-[#FFFFFF] text-[12px] '>RC</p>
-                </div>
-                <div className='bg-[#020222] w-[59px] h-[59px] rounded-full flex justify-center items-center mx-auto'>
-                    <img src="/add.svg" alt="Logo" />
-                </div>
-            </div>
-            <div className='top-[7.5rem] absolute'>
-                <img src="/active.svg" alt="Logo" />
-            </div>
-        </div>
-    )
-}
 
-export default Metrixs
+            <div className='my-8 flex flex-col gap-5'>
+                {isLoading ? (
+                    ""
+                ) : (
+                    <>
+                        {userMatrices.length > 0 ? (
+                            userMatrices.map((matrix) => (
+                                <div
+                                    key={matrix.id}
+                                    className='flex flex-col items-center cursor-pointer'
+                                    onClick={() => handleMatrixClick(matrix.id)}
+                                >
+                                    <div className='bg-[#020222] w-[59px] h-[59px] rounded-full flex justify-center items-center mx-auto'>
+                                        {matrix.logo !== "" ? (
+                                            <img
+                                                src={matrix.logo}
+                                                alt={matrix.name}
+                                                className='w-10 h-10 object-contain'
+                                            />
+                                        ) : (
+                                            <div className='text-white text-xl font-bold'>
+                                                {matrix.name.split(' ').length > 1
+                                                    ? matrix.name.split(' ')[0].charAt(0).toUpperCase() + matrix.name.split(' ')[1].charAt(0).toUpperCase()
+                                                    : matrix.name.charAt(0).toUpperCase()
+                                                }
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            ""
+                        )}
+
+                        <div
+                            className='bg-[#020222] w-[59px] h-[59px] rounded-full flex justify-center items-center mx-auto cursor-pointer'
+                            onClick={toggleMetrixDialog}
+                        >
+                            <img src="/add.svg" alt="Add Matrix" />
+                        </div>
+                    </>
+                )}
+            </div>
+
+            {activeIndex !== -1 ? (
+                <div
+                    className='absolute transition-all duration-300'
+                    style={{ top: `${topOffset}px ` }}
+                >
+                    <img src="/active.svg" alt="Active" />
+                </div>
+            ) : (
+                <div className='top-[7.5rem] absolute'>
+                    <img src="/active.svg" alt="Active" />
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default Metrixs;

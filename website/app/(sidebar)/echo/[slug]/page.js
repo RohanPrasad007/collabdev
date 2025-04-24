@@ -23,7 +23,28 @@ const servers = {
     {
       urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
     },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "de95f1928a87a522677de60b",
+      credential: "jX4hEVdfJFkSlRgg",
+    },
   ],
+
   iceCandidatePoolSize: 10,
 };
 
@@ -41,6 +62,7 @@ export default function EchoPage({ params }) {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const echoId = slug;
 
   // WebRTC refs
   const localStream = useRef(null);
@@ -637,9 +659,6 @@ export default function EchoPage({ params }) {
             {/* Display the echo name from the fetched data */}
             {echoData.name || `Voice-ch-${slug}`}
           </p>
-        </div>
-        <div>
-          <img src="/messager.svg" className="w-[30.63px] h-[30.63px]" />
         </div>
       </div>
 

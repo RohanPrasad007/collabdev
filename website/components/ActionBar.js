@@ -51,7 +51,7 @@ const ActionBar = () => {
     return (
         <div className="absolute bottom-0 left-3 mx-auto p-2" ref={tooltipRef}>
             <div onClick={toggleTooltip} className="cursor-pointer">
-                <img src='settings.svg' alt="Settings" />
+                <img src='/settings.svg' alt="Settings" />
             </div>
             {showTooltip && (
                 <div
