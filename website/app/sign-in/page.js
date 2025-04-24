@@ -27,24 +27,26 @@ export default function SignIn() {
             })
             .catch((error) => {
                 console.error("Error getting redirect result:", error);
-            })
-            .finally(() => {
-                setIsLoading(false);
             });
 
         // Listen for auth state changes
         const unsubscribe = auth.onAuthStateChanged((user) => {
+            setIsLoading(false);
             if (user) {
                 setUser(user);
-                // If user is already signed in, redirect to home
-                router.push("/");
+                // Check if this is a new user
+                if (user.metadata.creationTime === user.metadata.lastSignInTime) {
+                    router.push("/profile-info");
+                } else {
+                    router.push("/");
+                }
             } else {
                 setUser(null);
             }
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [router, auth]);
 
     const signInWithGoogleHandler = async () => {
         const provider = new GoogleAuthProvider();
@@ -55,11 +57,7 @@ export default function SignIn() {
                 prompt: 'select_account'
             }));
 
-            if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
-                navigate("/profile-info");
-            } else {
-                navigate("/");
-            }
+            // The redirection will be handled by the auth state listener
         } catch (popupError) {
             console.log("Popup failed, falling back to redirect...", popupError);
             await signInWithRedirect(auth, provider);
